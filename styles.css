@@ -12,11 +12,11 @@ html{scroll-behavior:smooth}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;line-height:1.5}
 
 /* SCROLLBAR */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
-::-webkit-scrollbar-thumb:hover{background:var(--text3)}
-*{scrollbar-width:thin;scrollbar-color:var(--border2) var(--bg)}
+::-webkit-scrollbar{width:0px;height:0px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:transparent}
+::-webkit-scrollbar-thumb:hover{background:transparent}
+*{scrollbar-width:none;}
 
 /* NAV */
 .nav{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--nav-h);background:rgba(7,14,27,.97);border-bottom:1px solid var(--border);backdrop-filter:blur(16px);display:flex;align-items:center;padding:0 24px;gap:0}
