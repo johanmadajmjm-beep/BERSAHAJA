@@ -20,13 +20,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Verify src files
-        run: |
-          echo "=== Files in src ==="
-          dir src
-          echo "=== Content check ==="
-          Get-Content src\index_easy.html -TotalCount 5
-
       - name: Build .exe
         run: npm run build:win
         env:
