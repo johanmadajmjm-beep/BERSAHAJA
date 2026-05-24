@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, shell } = require('electron')
+const { app, BrowserWindow } = require('electron')
 const path = require('path')
 
 function createWindow() {
@@ -17,21 +17,15 @@ function createWindow() {
     show: false
   })
 
-  const indexPath = path.join(app.getAppPath(), 'src', 'index_easy.html')
-  win.loadFile(indexPath)
+  win.loadFile('src/index_easy.html')
 
   win.once('ready-to-show', () => {
     win.show()
     win.webContents.openDevTools()
   })
-
-  win.webContents.on('did-fail-load', () => {
-    win.loadURL('data:text/html,<h1 style="color:white;background:#070e1b;padding:40px">Loading...</h1>')
-  })
 }
 
 app.whenReady().then(() => {
-  Menu.setApplicationMenu(null)
   createWindow()
 })
 
