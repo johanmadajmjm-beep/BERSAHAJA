@@ -49,6 +49,10 @@ function createWindow() {
           #__win_confirm__ {
             filter: none !important;
           }
+          html::-webkit-scrollbar{display:none !important;width:0 !important;}
+          body::-webkit-scrollbar{display:none !important;width:0 !important;}
+          html{scrollbar-width:none !important;-ms-overflow-style:none !important;}
+          body{scrollbar-width:none !important;-ms-overflow-style:none !important;}
         \`;
         document.head.appendChild(styleEl);
       }
