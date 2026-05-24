@@ -22,6 +22,7 @@ function createWindow() {
 
   win.once('ready-to-show', () => {
     win.show()
+    win.webContents.openDevTools()
   })
 
   win.webContents.on('did-fail-load', () => {
