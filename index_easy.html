@@ -304,6 +304,11 @@ footer strong{color:var(--text2)}
   .brand-name{filter:none}
 }
 </style>
+<script>
+if(sessionStorage.getItem('bersahaja_auth') !== 'ok'){
+  window.location.href = 'login.html';
+}
+</script>
 </head>
 <body>
 
