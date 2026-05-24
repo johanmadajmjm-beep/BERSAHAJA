@@ -15,15 +15,14 @@
       "output": "dist"
     },
     "files": [
-  "main.js",
-  "src/**/*"
-],
-"extraResources": [
-  {
-    "from": "src",
-    "to": "src"
-  }
-],
+      "main.js",
+      "src/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "src",
+        "to": "src"
+      }
     ],
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }]
