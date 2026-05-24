@@ -1,4 +1,5 @@
 const { app, BrowserWindow, Menu, ipcMain } = require('electron')
+const path = require('path')
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -12,39 +13,46 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       webSecurity: false,
-      preload: require('path').join(app.getAppPath(), 'preload.js')
+      preload: path.join(app.getAppPath(), 'preload.js')
     },
     show: false
   })
 
   win.loadFile('index_easy.html')
 
-  win.once('ready-to-show', () => {
-    win.show()
-
+  // Fungsi inject tombol — dipanggil setiap kali halaman selesai load
+  function injectControls() {
     win.webContents.executeJavaScript(`
-      // ── Fix font rendering ──
-      const style = document.createElement('style');
-      style.textContent = \`
-        * {
-          -webkit-font-smoothing: antialiased !important;
-          -moz-osx-font-smoothing: grayscale !important;
-          text-rendering: optimizeLegibility !important;
-          text-shadow: none !important;
-        }
-      \`;
-      document.head.appendChild(style);
+      // Hapus tombol lama kalau ada
+      const old = document.getElementById('__win_controls__');
+      if (old) old.remove();
 
-      // ── Tombol window controls ──
+      // Fix font rendering
+      let styleEl = document.getElementById('__win_style__');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = '__win_style__';
+        styleEl.textContent = \`
+          * {
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            text-rendering: optimizeLegibility !important;
+            text-shadow: none !important;
+          }
+        \`;
+        document.head.appendChild(styleEl);
+      }
+
+      // Buat tombol controls
       const bar = document.createElement('div');
+      bar.id = '__win_controls__';
       bar.style.cssText = \`
         position: fixed;
-        top: 0;
-        right: 0;
+        top: 8px;
+        right: 12px;
         z-index: 99999;
         display: flex;
         gap: 6px;
-        padding: 8px 12px;
       \`;
 
       function makeBtn(label, hoverColor) {
@@ -57,31 +65,41 @@ function createWindow() {
           border: none;
           background: rgba(255,255,255,0.12);
           color: #fff;
-          font-size: 13px;
+          font-size: 12px;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           transition: background 0.2s;
+          padding: 0;
         \`;
         btn.onmouseover = () => btn.style.background = hoverColor;
         btn.onmouseout = () => btn.style.background = 'rgba(255,255,255,0.12)';
         return btn;
       }
 
-      const btnMin = makeBtn('—', 'rgba(255,255,255,0.25)');
-      const btnMax = makeBtn('⛶', 'rgba(255,255,255,0.25)');
-      const btnClose = makeBtn('✕', 'rgba(244,63,94,0.8)');
+      const btnMin = makeBtn('–', 'rgba(255,255,255,0.3)');
+      const btnMax = makeBtn('□', 'rgba(255,255,255,0.3)');
+      const btnClose = makeBtn('✕', 'rgba(244,63,94,0.85)');
 
-      btnMin.onclick = () => window.electronAPI && window.electronAPI.minimize();
-      btnMax.onclick = () => window.electronAPI && window.electronAPI.maximize();
-      btnClose.onclick = () => window.electronAPI && window.electronAPI.close();
+      btnMin.onclick = () => window.electronAPI.minimize();
+      btnMax.onclick = () => window.electronAPI.maximize();
+      btnClose.onclick = () => window.electronAPI.close();
 
       bar.appendChild(btnMin);
       bar.appendChild(btnMax);
       bar.appendChild(btnClose);
       document.body.appendChild(bar);
     `)
+  }
+
+  // Inject setiap kali halaman selesai load (termasuk pindah halaman)
+  win.webContents.on('did-finish-load', () => {
+    injectControls()
+  })
+
+  win.once('ready-to-show', () => {
+    win.show()
   })
 
   ipcMain.on('win-minimize', () => win.minimize())
