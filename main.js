@@ -1,8 +1,10 @@
 const { app, BrowserWindow, Menu, ipcMain } = require('electron')
 const path = require('path')
 
+let mainWindow
+
 function createWindow() {
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 800,
@@ -13,21 +15,18 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       webSecurity: false,
-      preload: path.join(app.getAppPath(), 'preload.js')
+      preload: path.join(__dirname, 'preload.js')
     },
     show: false
   })
 
-  win.loadFile('index_easy.html')
+  mainWindow.loadFile('index_easy.html')
 
-  // Fungsi inject tombol — dipanggil setiap kali halaman selesai load
   function injectControls() {
-    win.webContents.executeJavaScript(`
-      // Hapus tombol lama kalau ada
+    mainWindow.webContents.executeJavaScript(`
       const old = document.getElementById('__win_controls__');
       if (old) old.remove();
 
-      // Fix font rendering
       let styleEl = document.getElementById('__win_style__');
       if (!styleEl) {
         styleEl = document.createElement('style');
@@ -43,7 +42,6 @@ function createWindow() {
         document.head.appendChild(styleEl);
       }
 
-      // Buat tombol controls
       const bar = document.createElement('div');
       bar.id = '__win_controls__';
       bar.style.cssText = \`
@@ -93,22 +91,30 @@ function createWindow() {
     `)
   }
 
-  // Inject setiap kali halaman selesai load (termasuk pindah halaman)
-  win.webContents.on('did-finish-load', () => {
+  mainWindow.webContents.on('did-finish-load', () => {
     injectControls()
   })
 
-  win.once('ready-to-show', () => {
-    win.show()
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show()
   })
-
-  ipcMain.on('win-minimize', () => win.minimize())
-  ipcMain.on('win-maximize', () => {
-    if (win.isMaximized()) win.unmaximize()
-    else win.maximize()
-  })
-  ipcMain.on('win-close', () => win.close())
 }
+
+// Handle IPC di luar createWindow
+ipcMain.on('win-minimize', () => {
+  if (mainWindow) mainWindow.minimize()
+})
+
+ipcMain.on('win-maximize', () => {
+  if (mainWindow) {
+    if (mainWindow.isMaximized()) mainWindow.unmaximize()
+    else mainWindow.maximize()
+  }
+})
+
+ipcMain.on('win-close', () => {
+  if (mainWindow) mainWindow.close()
+})
 
 app.whenReady().then(() => {
   Menu.setApplicationMenu(null)
