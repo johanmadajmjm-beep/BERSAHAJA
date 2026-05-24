@@ -1,0 +1,12 @@
+{
+  "appId": "id.bersahaja.app",
+  "appName": "BERSAHAJA",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#070e1b"
+  }
+}
