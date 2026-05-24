@@ -11,7 +11,8 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      webSecurity: false
+      webSecurity: false,
+      preload: require('path').join(app.getAppPath(), 'preload.js')
     },
     show: false
   })
