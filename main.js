@@ -22,6 +22,19 @@ function createWindow() {
     win.show()
 
     win.webContents.executeJavaScript(`
+      // ── Fix font rendering ──
+      const style = document.createElement('style');
+      style.textContent = \`
+        * {
+          -webkit-font-smoothing: antialiased !important;
+          -moz-osx-font-smoothing: grayscale !important;
+          text-rendering: optimizeLegibility !important;
+          text-shadow: none !important;
+        }
+      \`;
+      document.head.appendChild(style);
+
+      // ── Tombol window controls ──
       const bar = document.createElement('div');
       bar.style.cssText = \`
         position: fixed;
@@ -37,13 +50,18 @@ function createWindow() {
         const btn = document.createElement('button');
         btn.textContent = label;
         btn.style.cssText = \`
-          width: 28px; height: 28px;
+          width: 28px;
+          height: 28px;
           border-radius: 50%;
           border: none;
           background: rgba(255,255,255,0.12);
           color: #fff;
           font-size: 13px;
           cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background 0.2s;
         \`;
         btn.onmouseover = () => btn.style.background = hoverColor;
         btn.onmouseout = () => btn.style.background = 'rgba(255,255,255,0.12)';
