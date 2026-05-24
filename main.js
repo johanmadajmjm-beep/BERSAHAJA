@@ -27,6 +27,9 @@ function createWindow() {
       const old = document.getElementById('__win_controls__');
       if (old) old.remove();
 
+      const oldConfirm = document.getElementById('__win_confirm__');
+      if (oldConfirm) oldConfirm.remove();
+
       let styleEl = document.getElementById('__win_style__');
       if (!styleEl) {
         styleEl = document.createElement('style');
@@ -35,13 +38,22 @@ function createWindow() {
           * {
             -webkit-font-smoothing: antialiased !important;
             -moz-osx-font-smoothing: grayscale !important;
-            text-rendering: optimizeLegibility !important;
+            text-rendering: geometricPrecision !important;
             text-shadow: none !important;
+            filter: none !important;
+          }
+          h1,h2,h3,h4,h5,h6,p,span,div,a,td,th,label,button {
+            text-shadow: none !important;
+            filter: none !important;
+          }
+          #__win_confirm__ {
+            filter: none !important;
           }
         \`;
         document.head.appendChild(styleEl);
       }
 
+      // ── Tombol controls ──
       const bar = document.createElement('div');
       bar.id = '__win_controls__';
       bar.style.cssText = \`
@@ -57,8 +69,7 @@ function createWindow() {
         const btn = document.createElement('button');
         btn.textContent = label;
         btn.style.cssText = \`
-          width: 28px;
-          height: 28px;
+          width: 28px; height: 28px;
           border-radius: 50%;
           border: none;
           background: rgba(255,255,255,0.12);
@@ -70,6 +81,7 @@ function createWindow() {
           justify-content: center;
           transition: background 0.2s;
           padding: 0;
+          text-shadow: none !important;
         \`;
         btn.onmouseover = () => btn.style.background = hoverColor;
         btn.onmouseout = () => btn.style.background = 'rgba(255,255,255,0.12)';
@@ -82,7 +94,75 @@ function createWindow() {
 
       btnMin.onclick = () => window.electronAPI.minimize();
       btnMax.onclick = () => window.electronAPI.maximize();
-      btnClose.onclick = () => window.electronAPI.close();
+
+      // ── Dialog konfirmasi close ──
+      const confirmBox = document.createElement('div');
+      confirmBox.id = '__win_confirm__';
+      confirmBox.style.cssText = \`
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(7,14,27,0.85);
+        z-index: 999999;
+        align-items: center;
+        justify-content: center;
+      \`;
+
+      const confirmCard = document.createElement('div');
+      confirmCard.style.cssText = \`
+        background: #0c1625;
+        border: 1px solid #1b2e4a;
+        border-radius: 16px;
+        padding: 28px 32px;
+        text-align: center;
+        min-width: 280px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      \`;
+
+      confirmCard.innerHTML = \`
+        <div style="font-size:28px;margin-bottom:12px">👋</div>
+        <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:6px">Keluar dari BERSAHAJA?</div>
+        <div style="font-size:12px;color:#7090b8;margin-bottom:20px">Pastikan data kamu sudah tersimpan.</div>
+        <div style="display:flex;gap:10px;justify-content:center">
+          <button id="__btn_cancel__" style="
+            padding: 8px 22px;
+            border-radius: 8px;
+            border: 1px solid #1b2e4a;
+            background: #111e33;
+            color: #7090b8;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+          ">Batal</button>
+          <button id="__btn_confirm__" style="
+            padding: 8px 22px;
+            border-radius: 8px;
+            border: none;
+            background: #f43f5e;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+          ">Ya, Keluar</button>
+        </div>
+      \`;
+
+      confirmBox.appendChild(confirmCard);
+      document.body.appendChild(confirmBox);
+
+      btnClose.onclick = () => {
+        confirmBox.style.display = 'flex';
+      };
+
+      document.getElementById('__btn_cancel__') && 
+        document.getElementById('__btn_cancel__').addEventListener('click', () => {
+          confirmBox.style.display = 'none';
+        });
+
+      document.getElementById('__btn_confirm__') &&
+        document.getElementById('__btn_confirm__').addEventListener('click', () => {
+          window.electronAPI.close();
+        });
 
       bar.appendChild(btnMin);
       bar.appendChild(btnMax);
@@ -97,11 +177,9 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show()
-    mainWindow.webContents.openDevTools()
   })
 }
 
-// Handle IPC di luar createWindow
 ipcMain.on('win-minimize', () => {
   if (mainWindow) mainWindow.minimize()
 })
@@ -119,6 +197,15 @@ ipcMain.on('win-close', () => {
 
 app.whenReady().then(() => {
   Menu.setApplicationMenu(null)
+
+  app.on('browser-window-created', (_, window) => {
+    window.webContents.on('before-input-event', (event, input) => {
+      if (input.control && input.shift && input.key === 'I') {
+        window.webContents.openDevTools()
+      }
+    })
+  })
+
   createWindow()
 })
 
