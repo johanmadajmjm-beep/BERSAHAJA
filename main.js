@@ -20,7 +20,7 @@ function createWindow() {
     show: false
   })
 
-  mainWindow.loadFile('index_easy.html')
+  mainWindow.loadFile('login.html')
 
   function injectControls() {
     mainWindow.webContents.executeJavaScript(`
