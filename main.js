@@ -17,8 +17,7 @@ function createWindow() {
     show: false
   })
 
-  win.loadFile('src/index_easy.html')
-
+  win.loadFile('index_easy.html')
   win.once('ready-to-show', () => {
     win.show()
     win.webContents.openDevTools()
