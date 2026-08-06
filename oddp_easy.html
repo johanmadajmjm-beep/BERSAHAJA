@@ -18,7 +18,7 @@
 /* ── GANTI dengan URL deploy GAS kamu ── */
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbzBjyrkhksYbQhv6RxnzHe_6j4QT_bzmeLdWjvwIL9AJnCITyylm3tlVJr9rJHaHm4i3g/exec';
 var BERSAHAJA_TOKEN = localStorage.getItem('bersahaja_token');
-if(!BERSAHAJA_TOKEN){ window.location.href = 'login.html'; }
+if(!BERSAHAJA_TOKEN){ window.location.href = 'index.html'; }
 </script>
 </head>
 <body>
@@ -40,7 +40,8 @@ if(!BERSAHAJA_TOKEN){ window.location.href = 'login.html'; }
   <div class="nav-right">
     <span id="dataBadge" style="display:none"></span>
     <button onclick="refreshData()" id="refreshBtn" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.25);font-family:inherit">🔄 Refresh Data</button>
-    <a href="uploader.html" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);white-space:nowrap;font-family:inherit;text-decoration:none">📤 Upload Data</a>
+    <a href="uploader.html" style="display:none">📤 Upload Data</a>
+    <button onclick="doLogout()" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;background:rgba(244,63,94,.1);color:#f87171;border:1px solid rgba(244,63,94,.25);font-family:inherit">🚪 Keluar</button>
     <button id="globalAiBtn" class="nav-btn nav-btn-ai" onclick="generateAllODDPAnalysis()">✨ Generate Analisis AI</button>
     <button class="nav-btn nav-btn-dl" onclick="downloadPDF()">⬇ Laporan</button>
   </div>
@@ -238,7 +239,7 @@ function fetchFromGAS(showMsg){
     _gasFetching=false;
     if(btn){btn.textContent='🔄 Refresh Data';btn.disabled=false;}
     if(!data.success){
-      if(data.error&&data.error.includes('login')){window.location.href='login.html';return;}
+      if(data.error&&data.error.includes('login')){window.location.href='index.html';return;}
       showToast('⚠️ '+data.error);
       return;
     }
@@ -688,7 +689,7 @@ function doLogout(){
   localStorage.removeItem('bersahaja_token');
   localStorage.removeItem('bersahaja_username');
   localStorage.removeItem('bersahaja_role');
-  window.location.href='login.html';
+  window.location.href='index.html';
 }
 
 /* ── PDF PROFESIONAL ── */

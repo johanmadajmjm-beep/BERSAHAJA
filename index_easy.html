@@ -309,8 +309,8 @@ html{scrollbar-width:none !important;-ms-overflow-style:none !important;}
 body{scrollbar-width:none !important;-ms-overflow-style:none !important;}
 </style>
 <script>
-if(sessionStorage.getItem('bersahaja_auth') !== 'ok'){
-  window.location.href = 'login.html';
+if(!localStorage.getItem('bersahaja_token')){
+  window.location.href = 'index.html';
 }
 </script>
 </head>
