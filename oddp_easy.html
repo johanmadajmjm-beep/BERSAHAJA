@@ -6,27 +6,7 @@
 <title>Dashboard Monitoring ODDP</title>
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-/* Column Mapper Modal */
-#colMapModal{display:none;position:fixed;inset:0;background:rgba(7,14,27,.9);z-index:9999;align-items:center;justify-content:center;padding:16px}
-#colMapModal.show{display:flex}
-.cmap-box{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:24px 28px;max-width:680px;width:100%;max-height:88vh;display:flex;flex-direction:column;gap:0}
-.cmap-ttl{font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
-.cmap-sub{font-size:11px;color:var(--text2);margin-bottom:18px;line-height:1.6}
-.cmap-scroll{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
-.cmap-row{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:center;background:rgba(59,130,246,.04);border:1px solid rgba(59,130,246,.1);border-radius:9px;padding:9px 12px}
-.cmap-lbl{font-size:11px;font-weight:600;color:var(--text)}
-.cmap-lbl small{display:block;color:var(--text3);font-weight:400;font-size:9.5px;margin-top:1px}
-.cmap-sel{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;font-family:inherit;padding:5px 8px;border-radius:7px;width:100%;outline:none}
-.cmap-sel:focus{border-color:var(--accent)}
-.cmap-actions{display:flex;gap:8px}
-.cmap-btn{flex:1;padding:10px;border-radius:9px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:.15s}
-.cmap-ok{background:linear-gradient(135deg,#3b82f6,#6d28d9);color:#fff}
-.cmap-ok:hover{opacity:.9}
-.cmap-cancel{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
-.cmap-cancel:hover{background:var(--surface3)}
-.cmap-preview{font-size:10px;color:var(--text3);margin-top:6px;padding:6px 10px;background:var(--surface2);border-radius:6px}
 .ai-dot{width:5px;height:5px;border-radius:50%;background:#10b981;animation:aiDot .8s ease-in-out infinite}
 @keyframes aiDot{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
 .ai-narasi{background:linear-gradient(135deg,rgba(16,185,129,.06),rgba(59,130,246,.04));border:1px solid rgba(16,185,129,.15);border-radius:10px;padding:14px 16px;font-size:12px;color:var(--text2);line-height:1.9;margin-bottom:6px}
@@ -35,41 +15,19 @@
 .ai-narasi-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.25);margin-bottom:8px}
 </style>
 <script>
-if(sessionStorage.getItem('bersahaja_auth') !== 'ok'){
-  window.location.href = 'login.html';
-}
+/* ── GANTI dengan URL deploy GAS kamu ── */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbzBjyrkhksYbQhv6RxnzHe_6j4QT_bzmeLdWjvwIL9AJnCITyylm3tlVJr9rJHaHm4i3g/exec';
+var BERSAHAJA_TOKEN = localStorage.getItem('bersahaja_token');
+if(!BERSAHAJA_TOKEN){ window.location.href = 'login.html'; }
 </script>
 </head>
 <body>
 <div id="popup"><div class="popup-modal"><div class="popup-ttl" id="popupTitle"></div><div class="popup-sub" id="popupSub"></div><div class="popup-list" id="popupList"></div><button class="popup-close" onclick="closePopup()">✕ Tutup</button></div></div>
 <div id="toast"></div>
 
-<!-- CONFIRM HAPUS DATA -->
-<div id="confirmHapus" style="display:none;position:fixed;inset:0;background:rgba(7,14,27,.88);z-index:9999;align-items:center;justify-content:center;padding:16px">
-  <div style="background:var(--surface);border:1px solid rgba(244,63,94,.3);border-radius:18px;padding:28px 32px;max-width:400px;width:100%;text-align:center">
-    <div style="font-size:32px;margin-bottom:12px">🗑️</div>
-    <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:8px">Hapus Semua Data?</div>
-    <div style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:22px">Semua data ODDP yang telah diupload akan dihapus dari dashboard dan cache browser. Dashboard akan kembali ke kondisi kosong.<br><br><strong style="color:#f87171">Tindakan ini tidak dapat dibatalkan.</strong></div>
-    <div style="display:flex;gap:10px">
-      <button onclick="document.getElementById('confirmHapus').style.display='none'" style="flex:1;padding:11px;border-radius:9px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;background:var(--surface2);color:var(--text2);border:1px solid var(--border)">Tidak, Batal</button>
-      <button onclick="hapusSemuaData()" style="flex:1;padding:11px;border-radius:9px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,#f43f5e,#dc2626);color:#fff;border:none">Ya, Hapus Data</button>
-    </div>
-  </div>
-</div>
 
-<!-- COLUMN MAPPER MODAL -->
-<div id="colMapModal">
-  <div class="cmap-box">
-    <div class="cmap-ttl">🗂️ Petakan Kolom Excel → Dashboard</div>
-    <div class="cmap-sub">Dashboard mendeteksi <strong id="cmapFileInfo"></strong> kolom dari file Anda. Pilih kolom yang sesuai untuk setiap indikator. Kolom bertanda * wajib diisi.</div>
-    <div class="cmap-scroll" id="cmapRows"></div>
-    <div class="cmap-preview" id="cmapPreview"></div>
-    <div class="cmap-actions" style="margin-top:12px">
-      <button class="cmap-btn cmap-cancel" onclick="closeColMap()">✕ Batal</button>
-      <button class="cmap-btn cmap-ok" onclick="applyColMap()">✅ Terapkan & Tampilkan Dashboard</button>
-    </div>
-  </div>
-</div>
+
+
 
 
 <nav class="nav">
@@ -81,11 +39,8 @@ if(sessionStorage.getItem('bersahaja_auth') !== 'ok'){
   </div>
   <div class="nav-right">
     <span id="dataBadge" style="display:none"></span>
-    <button onclick="document.getElementById('confirmHapus').style.display='flex'" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.25);font-family:inherit" title="Hapus semua data dashboard">🗑️ Hapus Data</button>
-    <label id="xlsLabel" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);white-space:nowrap;font-family:inherit">
-      📂 Upload ODDP.xlsx
-      <input type="file" id="xlsInput" accept=".xlsx,.xls" style="display:none">
-    </label>
+    <button onclick="refreshData()" id="refreshBtn" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.25);font-family:inherit">🔄 Refresh Data</button>
+    <a href="uploader.html" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);white-space:nowrap;font-family:inherit;text-decoration:none">📤 Upload Data</a>
     <button id="globalAiBtn" class="nav-btn nav-btn-ai" onclick="generateAllODDPAnalysis()">✨ Generate Analisis AI</button>
     <button class="nav-btn nav-btn-dl" onclick="downloadPDF()">⬇ Laporan</button>
   </div>
@@ -96,7 +51,7 @@ if(sessionStorage.getItem('bersahaja_auth') !== 'ok'){
 <div class="kpi-strip" id="kpiStrip">
   <div class="kpi-grid" id="kpiGrid">
     <div style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--text3);font-size:12px;padding:16px 0">
-      <span style="font-size:18px">📂</span> Klik <strong style="color:#60a5fa;margin:0 4px">Upload ODDP.xlsx</strong> di kanan atas untuk memuat data
+      <span style="font-size:18px">⏳</span> <strong style="color:#60a5fa;margin:0 4px">Memuat data dari server...</strong>
     </div>
   </div>
 </div>
@@ -206,18 +161,9 @@ if(sessionStorage.getItem('bersahaja_auth') !== 'ok'){
    KOLOM NAMA DIDETEKSI OTOMATIS dari Excel (fleksibel)
    ================================================================ */
 
-/* ── FIELD MAP (diisi saat user petakan kolom) ── */
-let FMAP = {
-  colNama:'', colKab:'', colKec:'', colPK:'', colDesa:'', colJK:'',
-  colBulan:'', colTahun:'', colKuartal:'', colBulanLabel:'',
-  colADL:'', colPeng:'', colSosial:'', colKom:'', colProd:'',
-  colKetADL:'', colKetPeng:'', colKetSosial:'', colKetKom:'', colKetProd:''
-};
-let EXCEL_COLS = [];  // semua header dari Excel
-let RAW_ORIG = [];    // data original sebelum mapping
-let RAW = [];         // data setelah mapping
-const CACHE_KEY = 'bersahaja_oddp_v3';
-const FMAP_KEY  = 'bersahaja_oddp_fmap_v3';
+/* ── STATE ── */
+let RAW = [];         // data dari GAS, sudah normalized
+let _gasFetching = false;
 
 /* ── SCORE HELPERS ── */
 function avgByUniq(persons, field){
@@ -260,282 +206,92 @@ const KPI_DEFS=[
 ];
 
 /* ── EXCEL LOADER ── */
-function loadExcelFile(file){
-  if(!file)return;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-      const ws=wb.Sheets[wb.SheetNames[0]];
-      RAW_ORIG=XLSX.utils.sheet_to_json(ws,{defval:''});
-      if(!RAW_ORIG.length){showToast('⚠️ File Excel kosong');return;}
-      EXCEL_COLS=Object.keys(RAW_ORIG[0]);
-      // Coba load saved mapping
-      const savedMap=sessionStorage.getItem(FMAP_KEY);
-      if(savedMap){
-        try{
-          const m=JSON.parse(savedMap);
-          // Validasi semua kolom masih ada di file baru
-          const valid=Object.values(m).every(v=>!v||EXCEL_COLS.includes(v));
-          if(valid){FMAP=m;applyMappingAndRender(file.name);return;}
-        }catch(e2){}
-      }
-      openColMap(file.name);
-    }catch(err){console.error(err);showToast('❌ Gagal baca Excel: '+err.message);}
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-document.getElementById('xlsInput').addEventListener('change',function(){loadExcelFile(this.files[0]);});
-
-/* ── COLUMN MAPPER ── */
-const COL_DEFS=[
-  {key:'colNama',     lbl:'Nama ODDP',                  hint:'Kolom nama pasien/ODDP',            required:true},
-  {key:'colKab',      lbl:'Kabupaten',                  hint:'Kolom kabupaten',                   required:true},
-  {key:'colKec',      lbl:'Kecamatan',                  hint:'Kolom kecamatan',                   required:true},
-  {key:'colPK',       lbl:'Puskesmas',                  hint:'Kolom puskesmas',                   required:false},
-  {key:'colDesa',     lbl:'Desa',                       hint:'Kolom desa/kelurahan',               required:true},
-  {key:'colJK',       lbl:'Jenis Kelamin',              hint:'L=Laki-laki, P=Perempuan',          required:false},
-  {key:'colBulan', lbl:'Kolom Bulan/Periode', hint:'Pilih kolom bulan/periode. Tahun & Kuartal dihitung otomatis.', required:true},
-  {key:'colADL',      lbl:'★ Skor ADL',    hint:'Nilai numerik 0-3',                 required:true},
-  {key:'colPeng',     lbl:'★ Skor Kondisi Pengobatan', hint:'Nilai numerik 0-3',          required:true},
-  {key:'colSosial',   lbl:'★ Skor Kegiatan Sosial',    hint:'Nilai numerik 0-3',          required:true},
-  {key:'colKom',      lbl:'★ Skor Komunikasi',  hint:'Nilai numerik 0-3',                 required:true},
-  {key:'colProd',     lbl:'★ Skor Aktivitas Produktif',hint:'Nilai numerik 0-3',          required:true},
-  {key:'colKetADL',   lbl:'Keterangan ADL',             hint:'Kolom narasi/keterangan ADL',       required:false},
-  {key:'colKetPeng',  lbl:'Keterangan Kondisi Pengobatan', hint:'Narasi pengobatan',             required:false},
-  {key:'colKetSosial',lbl:'Keterangan Kegiatan Sosial', hint:'Narasi kegiatan sosial',            required:false},
-  {key:'colKetKom',   lbl:'Keterangan Komunikasi',      hint:'Narasi komunikasi',                 required:false},
-  {key:'colKetProd',  lbl:'Keterangan Aktivitas Produktif', hint:'Narasi aktivitas produktif',   required:false},
-];
-
-function autoGuess(colDefs, availableCols){
-  /* Coba auto-match berdasarkan keyword */
-  const patterns={
-    colNama:    /^nama$/i,
-    colKab:     /kabupaten|kab/i,
-    colKec:     /kecamatan|kec/i,
-    colPK:      /puskesmas|pkm/i,
-    colDesa:    /desa|kelurahan/i,
-    colJK:      /jenis.kelamin|^jk$|^gender$/i,
-    colBulan: /^bulan$|kode.bulan|periode|month|tgl|tanggal/i,
-    colADL:     /adl.*(kunj|kunjungan|visit).*2|kunjungan.*2.*adl/i,
-    colPeng:    /(pengobatan|obat).*(kunj|kunjungan).*2|kunj.*2.*(pengobatan|obat)/i,
-    colSosial:  /(sosial|kegiatan).*(kunj|kunjungan).*2|kunj.*2.*sosial/i,
-    colKom:     /komunikasi.*(kunj|kunjungan).*2|kunj.*2.*komunikasi/i,
-    colProd:    /(produktif|aktivitas).*(kunj|kunjungan).*2|kunj.*2.*(produktif|aktivitas)/i,
-    colKetADL:  /ket.*adl|keterangan.*adl/i,
-    colKetPeng: /ket.*(pengobatan|obat)|keterangan.*(pengobatan|obat)/i,
-    colKetSosial:/ket.*sosial|keterangan.*sosial/i,
-    colKetKom:  /ket.*komunikasi|keterangan.*komunikasi/i,
-    colKetProd: /ket.*(produktif|aktivitas)|keterangan.*(produktif|aktivitas)/i,
-  };
-  const result={};
-  colDefs.forEach(cd=>{
-    const pat=patterns[cd.key];
-    if(pat){
-      const found=availableCols.find(c=>pat.test(c));
-      result[cd.key]=found||'';
-    } else {
-      result[cd.key]='';
-    }
-  });
-  return result;
-}
-
-function openColMap(fname){
-  const guessed=autoGuess(COL_DEFS, EXCEL_COLS);
-  Object.assign(FMAP, guessed);
-  document.getElementById('cmapFileInfo').textContent=EXCEL_COLS.length+' kolom dari '+fname;
-  
-  const optHtml='<option value="">-- Pilih Kolom --</option>'+
-    EXCEL_COLS.map(c=>`<option value="${c}">${c}</option>`).join('');
-  
-  document.getElementById('cmapRows').innerHTML=COL_DEFS.map(cd=>`
-    <div class="cmap-row">
-      <div class="cmap-lbl">${cd.lbl}${cd.required?'<small>* wajib</small>':'<small>opsional</small>'}</div>
-      <select class="cmap-sel" id="cmap_${cd.key}" onchange="updateCmapPreview()">
-        ${optHtml}
-      </select>
-    </div>
-  `).join('');
-  
-  // Set selected values
-  COL_DEFS.forEach(cd=>{
-    const sel=document.getElementById('cmap_'+cd.key);
-    if(sel&&FMAP[cd.key]&&EXCEL_COLS.includes(FMAP[cd.key])){
-      sel.value=FMAP[cd.key];
-    }
-  });
-  
-  updateCmapPreview();
-  document.getElementById('colMapModal').classList.add('show');
-}
-
-function updateCmapPreview(){
-  const sample=RAW_ORIG[0]||{};
-  const namaCol=document.getElementById('cmap_colNama')?.value;
-  const adlCol=document.getElementById('cmap_colADL')?.value;
-  let preview='Preview baris pertama: ';
-  if(namaCol) preview+='Nama="'+sample[namaCol]+'" ';
-  if(adlCol) preview+='ADL="'+sample[adlCol]+'"';
-  document.getElementById('cmapPreview').textContent=preview;
-}
-
-function closeColMap(){document.getElementById('colMapModal').classList.remove('show');}
-
-function applyColMap(){
-  COL_DEFS.forEach(cd=>{
-    const sel=document.getElementById('cmap_'+cd.key);
-    if(sel)FMAP[cd.key]=sel.value;
-  });
-  // Validasi kolom wajib
-  const missing=COL_DEFS.filter(cd=>cd.required&&!FMAP[cd.key]);
-  if(missing.length){
-    showToast('⚠️ Harap pilih kolom wajib: '+missing.map(c=>c.lbl).join(', '));
-    return;
-  }
-  closeColMap();
-  try{sessionStorage.setItem(FMAP_KEY,JSON.stringify(FMAP));}catch(e){}
-  applyMappingAndRender('');
-}
-
-/* ── TIMELINE HELPERS ── */
-/* Parse kolom bulan: Excel serial, YYYYMM, nama bulan, angka */
-const BULAN_INDO={
-  'januari':1,'februari':2,'maret':3,'april':4,'mei':5,'juni':6,
-  'juli':7,'agustus':8,'september':9,'oktober':10,'november':11,'desember':12,
-  'jan':1,'feb':2,'mar':3,'apr':4,'jun':6,'jul':7,'agu':8,'agt':8,
-  'sep':9,'okt':10,'nov':11,'des':12,
-  'january':1,'february':2,'march':3,'may':5,'june':6,'july':7,
-  'august':8,'october':10,'december':12
-};
+/* ── BULAN HELPERS (data sudah YYYY-MM dari GAS) ── */
 const BULAN_ABBR=['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-const BULAN_NAMA=['','Januari','Februari','Maret','April','Mei','Juni',
-                  'Juli','Agustus','September','Oktober','November','Desember'];
 
-function parseMonthYear(raw){
-  if(raw===null||raw===undefined||raw==='')return null;
-  const s=String(raw).trim();
-  const num=Number(s);
-  // 1. Excel serial date (5-digit, range tahun 2000-2099 ≈ 36526-73050)
-  if(!isNaN(num)&&num===Math.floor(num)&&num>=36526&&num<=73050){
-    const d=new Date((num-25569)*86400*1000);
-    return{month:d.getUTCMonth()+1,year:d.getUTCFullYear()};
-  }
-  // 2. YYYYMM murni 6 digit
-  const dig=s.replace(/[^0-9]/g,'');
-  if(dig.length===6){
-    const y=parseInt(dig.substring(0,4)),m=parseInt(dig.substring(4,6));
-    if(y>=2000&&y<=2099&&m>=1&&m<=12)return{month:m,year:y};
-  }
-  // 3. Cari tahun 4-digit
-  const mY=s.match(/\b(20\d{2})\b/);
-  const year=mY?parseInt(mY[1]):0;
-  // 4. Nama bulan (panjang dulu agar lebih spesifik)
-  const cl=s.toLowerCase();
-  const ent=Object.entries(BULAN_INDO).sort((a,b)=>b[0].length-a[0].length);
-  for(const[nm,m]of ent){
-    if(cl===nm||cl.startsWith(nm+' ')||cl.endsWith(' '+nm)||cl.includes(' '+nm+' ')||cl.includes('-'+nm)||cl.startsWith(nm)){
-      return{month:m,year:year||new Date().getFullYear()};
-    }
-  }
-  // 5. Angka 1-12 standalone
-  const pts=s.split(/[^0-9]+/).filter(p=>p.length>0&&p.length<=2);
-  for(const p of pts){const v=parseInt(p);if(v>=1&&v<=12)return{month:v,year:year||0};}
+function parseBulanKey(key){ // "2025-03" → {year:2025,month:3}
+  if(!key)return null;
+  const m=String(key).match(/^(\d{4})-(\d{2})$/);
+  if(m)return{year:parseInt(m[1]),month:parseInt(m[2])};
   return null;
 }
-function detectMonthNum(raw){const r=parseMonthYear(raw);return r?r.month:0;}
-function makeBulanKey(raw){
-  const r=parseMonthYear(raw);
-  if(!r||!r.year||!r.month)return String(raw);
-  return String(r.year)+String(r.month).padStart(2,'0'); // "202503"
+function bulanToLabel(key){
+  const p=parseBulanKey(key);
+  if(!p)return key;
+  return BULAN_ABBR[p.month]+'-'+String(p.year).substring(2);
 }
-function makeBulanLabel(raw){
-  const r=parseMonthYear(raw);
-  if(!r||!r.month)return String(raw);
-  const yr2=r.year?String(r.year).substring(2):'';
-  return BULAN_ABBR[r.month]+(yr2?'-'+yr2:''); // "Mar-25"
-}
-function makeKuartalKey(raw){
-  const r=parseMonthYear(raw);
-  if(!r||!r.year)return '';
-  return String(r.year)+'0'+Math.ceil(r.month/3); // "202501"
-}
-function makeKuartalLabel(raw){
-  const r=parseMonthYear(raw);
-  if(!r||!r.year)return '';
-  const yr2=String(r.year).substring(2);
-  return 'Q'+Math.ceil(r.month/3)+'-'+yr2; // "Q1-25"
-}
+function bulanToTahun(key){const p=parseBulanKey(key);return p?String(p.year):'';}
+function bulanToKuartalKey(key){const p=parseBulanKey(key);return p?String(p.year)+'0'+Math.ceil(p.month/3):'';}
+function bulanToKuartalLabel(key){const p=parseBulanKey(key);return p?'Q'+Math.ceil(p.month/3)+'-'+String(p.year).substring(2):'';}
+const numParse=v=>(v===''||v===null||v===undefined)?null:parseFloat(String(v).replace(',','.'));
 
-function applyMappingAndRender(fname){
-  // Map RAW_ORIG → RAW dengan field internal (_adl, _peng, dll)
-  RAW=RAW_ORIG.map(r=>{
-    const mapped={};
-    // Copy semua kolom asli juga
-    Object.assign(mapped,r);
-    // Map ke internal fields
-    mapped._nama   = FMAP.colNama    ? String(r[FMAP.colNama]||'').trim()    : '';
-    mapped._kab    = FMAP.colKab     ? String(r[FMAP.colKab]||'').trim()     : '';
-    mapped._kec    = FMAP.colKec     ? String(r[FMAP.colKec]||'').trim()     : '';
-    mapped._pk     = FMAP.colPK      ? String(r[FMAP.colPK]||'').trim()      : '';
-    mapped._desa   = FMAP.colDesa    ? String(r[FMAP.colDesa]||'').trim()    : '';
-    mapped._jk     = FMAP.colJK      ? String(r[FMAP.colJK]||'').trim()      : '';
-    // Timeline derive otomatis dari kolom bulan
-    const rawBulan=FMAP.colBulan?String(r[FMAP.colBulan]||'').trim():'';
-    const _pd=parseMonthYear(rawBulan);
-    mapped._bulan      = _pd?makeBulanKey(rawBulan):rawBulan;    // '202503'
-    mapped._bulanLabel = _pd?makeBulanLabel(rawBulan):rawBulan;  // 'Mar-25'
-    mapped._tahun      = _pd?String(_pd.year):'';               // '2025'
-    mapped._kuartalKey = _pd?makeKuartalKey(rawBulan):'';       // '202501'
-    mapped._kuartal    = _pd?makeKuartalLabel(rawBulan):'';     // 'Q1-25'
-        // Numerik
-    const numParse=v=>(v===''||v===null||v===undefined)?null:parseFloat(String(v).replace(',','.'));
-    mapped._adl    = FMAP.colADL    ? numParse(r[FMAP.colADL])    : null;
-    mapped._peng   = FMAP.colPeng   ? numParse(r[FMAP.colPeng])   : null;
-    mapped._sosial = FMAP.colSosial ? numParse(r[FMAP.colSosial]) : null;
-    mapped._kom    = FMAP.colKom    ? numParse(r[FMAP.colKom])    : null;
-    mapped._prod   = FMAP.colProd   ? numParse(r[FMAP.colProd])   : null;
-    // Keterangan
-    mapped._ketADL    = FMAP.colKetADL    ? String(r[FMAP.colKetADL]||'').trim()    : '';
-    mapped._ketPeng   = FMAP.colKetPeng   ? String(r[FMAP.colKetPeng]||'').trim()   : '';
-    mapped._ketSosial = FMAP.colKetSosial ? String(r[FMAP.colKetSosial]||'').trim() : '';
-    mapped._ketKom    = FMAP.colKetKom    ? String(r[FMAP.colKetKom]||'').trim()    : '';
-    mapped._ketProd   = FMAP.colKetProd   ? String(r[FMAP.colKetProd]||'').trim()   : '';
-    // Alias untuk kompatibilitas (Kabupaten, Kecamatan, dll)
-    mapped.Kabupaten=mapped._kab; mapped.Kecamatan=mapped._kec;
-    mapped.Puskesmas=mapped._pk; mapped.Desa=mapped._desa;
-    mapped.Nama=mapped._nama; mapped.jk=mapped._jk;
-    mapped.bulan=mapped._bulan; mapped.tahun=mapped._tahun;
-    mapped.kuartal=mapped._kuartal; mapped.bulanLabel=mapped._bulanLabel;
-    return mapped;
-  }).filter(r=>r._nama);
-  
-  try{sessionStorage.setItem(CACHE_KEY,JSON.stringify(RAW));}catch(e){}
-  
-  const lbl=document.getElementById('xlsLabel');
-  if(lbl){lbl.style.background='rgba(16,185,129,.15)';lbl.style.color='#34d399';lbl.style.borderColor='rgba(16,185,129,.3)';}
-  
-  initDashboard();
-  if(fname)showToast('✅ Data ODDP dimuat: '+RAW.length+' baris');
-}
+/* ── GAS FETCH ── */
+function fetchFromGAS(showMsg){
+  if(_gasFetching)return;
+  _gasFetching=true;
+  const btn=document.getElementById('refreshBtn');
+  if(btn){btn.textContent='⏳ Memuat...';btn.disabled=true;}
 
-/* Try cache on load */
-(function tryCache(){
-  try{
-    const cm=sessionStorage.getItem(FMAP_KEY);
-    const cd=sessionStorage.getItem(CACHE_KEY);
-    if(cm&&cd){
-      FMAP=JSON.parse(cm);
-      RAW=JSON.parse(cd);
-      if(RAW.length){
-        // data loaded from cache
-        setTimeout(initDashboard,60);
-      }
+  fetch(GAS_URL+'?action=oddp&token='+encodeURIComponent(BERSAHAJA_TOKEN))
+  .then(r=>r.json())
+  .then(data=>{
+    _gasFetching=false;
+    if(btn){btn.textContent='🔄 Refresh Data';btn.disabled=false;}
+    if(!data.success){
+      if(data.error&&data.error.includes('login')){window.location.href='login.html';return;}
+      showToast('⚠️ '+data.error);
+      return;
     }
-  }catch(e){}
-})();
+    mapGASRows(data.rows||[]);
+    if(showMsg!==false)showToast('✅ Data ODDP dimuat: '+RAW.length+' baris');
+  })
+  .catch(err=>{
+    _gasFetching=false;
+    if(btn){btn.textContent='🔄 Refresh Data';btn.disabled=false;}
+    showToast('⚠️ Gagal terhubung ke server: '+err.message);
+  });
+}
+
+function refreshData(){fetchFromGAS(true);}
+
+function mapGASRows(rows){
+  // GAS rows sudah normalized (key = nama, kab, kec, ... adl, peng, dst)
+  RAW=rows.map(r=>{
+    const bulan=String(r.bulan||'').trim();
+    return {
+      _nama:      String(r.nama||'').trim(),
+      _kab:       String(r.kab||'').trim(),
+      _kec:       String(r.kec||'').trim(),
+      _pk:        String(r.pk||'').trim(),
+      _desa:      String(r.desa||'').trim(),
+      _jk:        String(r.jk||'').trim(),
+      _bulan:     bulan,
+      _bulanLabel:bulanToLabel(bulan),
+      _tahun:     bulanToTahun(bulan),
+      _kuartalKey:bulanToKuartalKey(bulan),
+      _kuartal:   bulanToKuartalLabel(bulan),
+      _adl:       numParse(r.adl),
+      _peng:      numParse(r.peng),
+      _sosial:    numParse(r.sosial),
+      _kom:       numParse(r.kom),
+      _prod:      numParse(r.prod),
+      _ketADL:    String(r.ket_adl||'').trim(),
+      _ketPeng:   String(r.ket_peng||'').trim(),
+      _ketSosial: String(r.ket_sosial||'').trim(),
+      _ketKom:    String(r.ket_kom||'').trim(),
+      _ketProd:   String(r.ket_prod||'').trim(),
+      // alias kompatibilitas
+      Kabupaten:String(r.kab||'').trim(), Kecamatan:String(r.kec||'').trim(),
+      Puskesmas:String(r.pk||'').trim(), Desa:String(r.desa||'').trim(),
+      Nama:String(r.nama||'').trim(), jk:String(r.jk||'').trim(),
+      bulan:bulan,
+    };
+  }).filter(r=>r._nama);
+  initDashboard();
+}
+
+/* Auto-fetch saat halaman load */
+window.addEventListener('DOMContentLoaded', function(){ fetchFromGAS(false); });
 
 /* ── COMPUTE & FILTER ── */
 function computeAll(){
@@ -927,29 +683,12 @@ function generateODDPIndicator(kpi){const data=getFiltered();const uniq=uniqNama
 function generateAllODDPAnalysis(show=true){if(!RAW.length){showToast('⚠️ Upload data Excel terlebih dahulu');return;}const btn=document.getElementById('globalAiBtn');if(btn){btn.disabled=true;btn.textContent='⏳ Membuat analisis...';}Object.values(KPI_MAP_ODDP).forEach(generateODDPIndicator);if(btn){setTimeout(()=>{btn.disabled=false;btn.textContent='✨ Generate Analisis AI';},500);}if(show)showToast('✅ Analisis AI lokal ODDP selesai');}
 function openAIKeyModal(){}function closeAIKeyModal(){}function startAIAnalysis(){}
 
-/* ── HAPUS DATA ── */
-function hapusSemuaData(){
-  document.getElementById('confirmHapus').style.display='none';
-  // Destroy semua chart
-  Object.keys(CH).forEach(k=>{try{if(CH[k]&&typeof CH[k].destroy==='function')CH[k].destroy();}catch(e){}delete CH[k];});
-  // Reset state
-  RAW=[]; RAW_ORIG=[]; EXCEL_COLS=[];
-  FMAP={colNama:'',colKab:'',colKec:'',colPK:'',colDesa:'',colJK:'',colBulan:'',colTahun:'',colKuartal:'',colBulanLabel:'',colADL:'',colPeng:'',colSosial:'',colKom:'',colProd:'',colKetADL:'',colKetPeng:'',colKetSosial:'',colKetKom:'',colKetProd:''};
-  ALL={}; SEL={tl:new Set(),kab:new Set(),kec:new Set(),pk:new Set(),desa:new Set(),nama:new Set()};
-  bulanLabel={};
-  try{sessionStorage.removeItem(CACHE_KEY);sessionStorage.removeItem(FMAP_KEY);}catch(e){}
-  // Reset UI
-  document.getElementById('dataBadge').textContent='Belum ada data';
-  const lbl=document.getElementById('xlsLabel');
-  if(lbl){lbl.style.background='rgba(59,130,246,.15)';lbl.style.color='#60a5fa';lbl.style.borderColor='rgba(59,130,246,.3)';}
-  document.getElementById('kpiGrid').innerHTML='<div style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--text3);font-size:12px;padding:16px 0"><span style="font-size:18px">📂</span> Klik <strong style="color:#60a5fa;margin:0 4px">Upload ODDP.xlsx</strong> di kanan atas untuk memuat data</div>';
-  ['analysisADL','analysisPeng','analysisSosial','analysisKom','analysisProd'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
-  const th=document.getElementById('tblHead');if(th)th.innerHTML='';
-  const tb=document.getElementById('tblBody');if(tb)tb.innerHTML='';
-  ['adlN','pengN','sosialN','komN','prodN'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='';});
-  ['kabList','kecList','pkList','desaList','namaList','tlList'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
-  const inp=document.getElementById('xlsInput');if(inp)inp.value='';
-  showToast('✅ Data berhasil dihapus — dashboard dikosongkan');
+/* ── LOGOUT ── */
+function doLogout(){
+  localStorage.removeItem('bersahaja_token');
+  localStorage.removeItem('bersahaja_username');
+  localStorage.removeItem('bersahaja_role');
+  window.location.href='login.html';
 }
 
 /* ── PDF PROFESIONAL ── */
