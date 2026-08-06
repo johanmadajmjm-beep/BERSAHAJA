@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dashboard Monitoring Kader</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#070e1b;--surface:#0c1625;--surface2:#111e33;--surface3:#1a2d47;--border:#1b2e4a;--border2:#1e3554;--text:#dde8f8;--text2:#7a9cbf;--text3:#3a5575;--accent:#fbbf24;--accent2:#f59e0b}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:inherit;text-decoration:none}
+.nav{background:rgba(7,14,27,.92);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;height:56px;gap:14px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);flex-wrap:wrap}
+.nav-brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+.nav-links{display:flex;gap:4px}
+.nav-link{font-size:12px;font-weight:500;padding:6px 11px;border-radius:8px;color:var(--text2);white-space:nowrap}
+.nav-link:hover{background:var(--surface2);color:var(--text)}
+.nav-link.active{background:rgba(251,191,36,.12);color:var(--accent)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.nav-btn{font-size:11px;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;font-family:inherit;border:1px solid}
+.btn-refresh{background:rgba(251,191,36,.12);color:var(--accent);border-color:rgba(251,191,36,.25)}
+.btn-logout{background:rgba(244,63,94,.1);color:#f87171;border-color:rgba(244,63,94,.25)}
+.wrap{max-width:1280px;margin:0 auto;padding:20px}
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:18px 20px}
+.kpi .ic{font-size:22px;margin-bottom:8px}
+.kpi .v{font-size:28px;font-weight:800;line-height:1}
+.kpi .l{font-size:11px;color:var(--text2);margin-top:6px}
+/* Filters */
+.filters{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:16px 20px;margin-bottom:20px;display:flex;gap:14px;flex-wrap:wrap;align-items:end}
+.f-group{display:flex;flex-direction:column;gap:5px}
+.f-group label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.f-group select{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:12px;font-family:inherit;padding:8px 12px;border-radius:8px;outline:none;min-width:150px}
+.f-group select:focus{border-color:var(--accent)}
+.f-reset{background:var(--surface2);color:var(--text2);border:1px solid var(--border);font-size:11px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer;font-family:inherit}
+/* Charts */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.chart-card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:18px 20px}
+.chart-card h3{font-size:13px;font-weight:700;margin-bottom:14px}
+.chart-box{position:relative;height:260px}
+/* Table */
+.table-card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:18px 20px;margin-bottom:20px}
+.table-card h3{font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--surface2);color:var(--text2);font-weight:600;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.cell-long{max-width:280px;font-size:11px;color:var(--text2);line-height:1.5}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:rgba(251,191,36,.12);color:var(--accent)}
+.empty{padding:40px;text-align:center;color:var(--text3);font-size:13px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e3554;color:#dde8f8;font-size:12px;font-weight:600;padding:10px 20px;border-radius:10px;border:1px solid var(--border2);opacity:0;transition:.3s;pointer-events:none;z-index:9999}
+#toast.show{opacity:1}
+@media(max-width:860px){.kpi-row{grid-template-columns:repeat(2,1fr)}.chart-row{grid-template-columns:1fr}}
+</style>
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbzBjyrkhksYbQhv6RxnzHe_6j4QT_bzmeLdWjvwIL9AJnCITyylm3tlVJr9rJHaHm4i3g/exec';
+var TOKEN = localStorage.getItem('bersahaja_token');
+if(!TOKEN){ window.location.href='index.html'; }
+</script>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-brand">🤝 BERSAHAJA</div>
+  <div class="nav-links">
+    <a href="index_easy.html" class="nav-link">🏠 Home</a>
+    <a href="oddp_easy.html" class="nav-link">🧠 ODDP</a>
+    <a href="caregiver_easy.html" class="nav-link">🤝 Caregiver</a>
+    <a href="kader_easy.html" class="nav-link active">🧑‍🤝‍🧑 Kader</a>
+    <a href="nakes_easy.html" class="nav-link">⚕️ Nakes</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn btn-refresh" id="refreshBtn" onclick="refreshData()">🔄 Refresh</button>
+    <button class="nav-btn btn-logout" onclick="doLogout()">🚪 Keluar</button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="kpi-row" id="kpiRow">
+    <div class="kpi"><div class="ic">⏳</div><div class="v" id="kpiKader">–</div><div class="l">Memuat data...</div></div>
+  </div>
+
+  <div class="filters" id="filters" style="display:none">
+    <div class="f-group"><label>Bulan</label><select id="fBulan" onchange="applyFilter()"><option value="">Semua</option></select></div>
+    <div class="f-group"><label>Kabupaten</label><select id="fKab" onchange="applyFilter()"><option value="">Semua</option></select></div>
+    <div class="f-group"><label>Kecamatan</label><select id="fKec" onchange="applyFilter()"><option value="">Semua</option></select></div>
+    <div class="f-group"><label>Desa</label><select id="fDesa" onchange="applyFilter()"><option value="">Semua</option></select></div>
+    <button class="f-reset" onclick="resetFilter()">↺ Reset</button>
+  </div>
+
+  <div class="chart-row" id="chartRow" style="display:none">
+    <div class="chart-card"><h3>📊 Kunjungan per Kecamatan</h3><div class="chart-box"><canvas id="chartKec"></canvas></div></div>
+    <div class="chart-card"><h3>📈 Kunjungan per Bulan</h3><div class="chart-box"><canvas id="chartBulan"></canvas></div></div>
+  </div>
+
+  <div class="table-card" id="tableCard" style="display:none">
+    <h3>📋 Detail Kunjungan Kader <span class="badge" id="rowCount"></span></h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Kader</th><th>Wilayah</th><th>Bulan</th><th>ODDP Dikunjungi</th>
+          <th>Tgl Kunj 1</th><th>Tgl Kunj 2</th><th>Hasil Observasi</th><th>Tantangan</th><th>RTL</th><th>CO</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var RAW = [], CH = {};
+Chart.defaults.color='#3a5575';Chart.defaults.borderColor='#1b2e4a';Chart.defaults.font.family="'Inter',system-ui,sans-serif";Chart.defaults.font.size=10;
+
+function bulanLabel(k){var m=String(k).match(/^(\d{4})-(\d{2})$/);if(!m)return k;var A=['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];return A[parseInt(m[2])]+'-'+m[1].substring(2);}
+
+window.addEventListener('DOMContentLoaded', function(){ fetchData(false); });
+
+function doLogout(){localStorage.clear();window.location.href='index.html';}
+function refreshData(){fetchData(true);}
+
+function fetchData(msg){
+  var btn=document.getElementById('refreshBtn');
+  if(btn){btn.textContent='⏳';btn.disabled=true;}
+  fetch(GAS_URL+'?action=kader&token='+encodeURIComponent(TOKEN))
+  .then(r=>r.json()).then(function(d){
+    if(btn){btn.textContent='🔄 Refresh';btn.disabled=false;}
+    if(!d.success){ if(d.error&&d.error.indexOf('login')>=0){window.location.href='index.html';return;} showToast('⚠️ '+d.error); return; }
+    RAW=(d.rows||[]).map(function(r){return{
+      kader:String(r.nama_kader||'').trim(), jk:String(r.jk||'').trim(), kontak:String(r.kontak||'').trim(),
+      kab:String(r.kab||'').trim(), kec:String(r.kec||'').trim(), desa:String(r.desa||'').trim(), pk:String(r.pk||'').trim(),
+      bulan:String(r.bulan||'').trim(), oddp:String(r.nama_oddp||'').trim(),
+      tgl1:String(r.tgl_kunjungan1||'').trim(), tgl2:String(r.tgl_kunjungan2||'').trim(),
+      observasi:String(r.hasil_observasi||'').trim(), tantangan:String(r.tantangan||'').trim(),
+      rtl:String(r.rtl||'').trim(), co:String(r.co||'').trim()
+    };}).filter(r=>r.kader);
+    initFilters(); applyFilter();
+    document.getElementById('filters').style.display='flex';
+    document.getElementById('chartRow').style.display='grid';
+    document.getElementById('tableCard').style.display='block';
+    if(msg!==false)showToast('✅ Data Kader dimuat: '+RAW.length+' baris');
+  }).catch(function(e){ if(btn){btn.textContent='🔄 Refresh';btn.disabled=false;} showToast('⚠️ Gagal terhubung: '+e.message); });
+}
+
+function uniq(arr){return [...new Set(arr)].filter(Boolean).sort();}
+function fill(id,vals){var s=document.getElementById(id);var cur=s.value;s.innerHTML='<option value="">Semua</option>'+vals.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');if(vals.indexOf(cur)>=0)s.value=cur;}
+function initFilters(){
+  fill('fBulan',uniq(RAW.map(r=>r.bulan)));
+  fill('fKab',uniq(RAW.map(r=>r.kab)));
+  fill('fKec',uniq(RAW.map(r=>r.kec)));
+  fill('fDesa',uniq(RAW.map(r=>r.desa)));
+}
+function getFiltered(){
+  var fb=document.getElementById('fBulan').value, fk=document.getElementById('fKab').value,
+      fc=document.getElementById('fKec').value, fd=document.getElementById('fDesa').value;
+  return RAW.filter(r=>(!fb||r.bulan===fb)&&(!fk||r.kab===fk)&&(!fc||r.kec===fc)&&(!fd||r.desa===fd));
+}
+function resetFilter(){['fBulan','fKab','fKec','fDesa'].forEach(id=>document.getElementById(id).value='');applyFilter();}
+
+function applyFilter(){
+  var data=getFiltered();
+  // KPI
+  document.getElementById('kpiRow').innerHTML=
+    kpi('🧑‍🤝‍🧑',uniqCount(data,'kader'),'Total Kader')+
+    kpi('📋',data.length,'Total Kunjungan')+
+    kpi('🧠',uniqCount(data,'oddp'),'ODDP Terjangkau')+
+    kpi('📍',uniqCount(data,'desa'),'Desa Terlayani');
+  renderCharts(data);
+  renderTable(data);
+}
+function kpi(ic,v,l){return '<div class="kpi"><div class="ic">'+ic+'</div><div class="v">'+v+'</div><div class="l">'+l+'</div></div>';}
+function uniqCount(data,f){return new Set(data.map(r=>r[f]).filter(Boolean)).size;}
+
+function renderCharts(data){
+  // per kecamatan
+  var byKec={}; data.forEach(r=>{if(r.kec)byKec[r.kec]=(byKec[r.kec]||0)+1;});
+  var kecKeys=Object.keys(byKec).sort((a,b)=>byKec[b]-byKec[a]);
+  drawBar('chartKec',kecKeys,kecKeys.map(k=>byKec[k]),'#fbbf24');
+  // per bulan
+  var byB={}; data.forEach(r=>{if(r.bulan)byB[r.bulan]=(byB[r.bulan]||0)+1;});
+  var bKeys=Object.keys(byB).sort();
+  drawLine('chartBulan',bKeys.map(bulanLabel),bKeys.map(k=>byB[k]),'#f59e0b');
+}
+function drawBar(id,labels,vals,color){
+  if(CH[id])CH[id].destroy();
+  CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:color+'cc',borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},maintainAspectRatio:false}});
+}
+function drawLine(id,labels,vals,color){
+  if(CH[id])CH[id].destroy();
+  CH[id]=new Chart(document.getElementById(id),{type:'line',data:{labels,datasets:[{data:vals,borderColor:color,backgroundColor:color+'22',fill:true,tension:.3,pointRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},maintainAspectRatio:false}});
+}
+
+function renderTable(data){
+  document.getElementById('rowCount').textContent=data.length+' baris';
+  if(!data.length){document.getElementById('tbody').innerHTML='<tr><td colspan="10"><div class="empty">Tidak ada data untuk filter ini.</div></td></tr>';return;}
+  document.getElementById('tbody').innerHTML=data.map(r=>
+    '<tr>'+
+    '<td><strong>'+esc(r.kader)+'</strong>'+(r.kontak?'<br><span style="color:var(--text3);font-size:10px">'+esc(r.kontak)+'</span>':'')+'</td>'+
+    '<td>'+esc(r.kec)+'<br><span style="color:var(--text3);font-size:10px">'+esc(r.desa)+'</span></td>'+
+    '<td>'+esc(bulanLabel(r.bulan))+'</td>'+
+    '<td>'+esc(r.oddp)+'</td>'+
+    '<td>'+esc(r.tgl1)+'</td>'+
+    '<td>'+esc(r.tgl2)+'</td>'+
+    '<td class="cell-long">'+esc(r.observasi)+'</td>'+
+    '<td class="cell-long">'+esc(r.tantangan)+'</td>'+
+    '<td class="cell-long">'+esc(r.rtl)+'</td>'+
+    '<td>'+esc(r.co)+'</td>'+
+    '</tr>'
+  ).join('');
+}
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function showToast(m){var e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),3200);}
+</script>
+</body>
+</html>
