@@ -6,6 +6,7 @@
 <title>Dashboard Monitoring Kader</title>
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 .chart-box{position:relative;height:260px}
 .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px}
@@ -123,6 +124,7 @@ if(!TOKEN){ window.location.href='index.html'; }
 var RAW=[], CH={};
 var SEL={bulan:new Set(),kab:new Set(),kec:new Set(),pk:new Set(),desa:new Set(),kader:new Set()};
 Chart.defaults.color='#3a5575';Chart.defaults.borderColor='#1b2e4a';Chart.defaults.font.family="'Inter',system-ui,sans-serif";Chart.defaults.font.size=10;
+if(window.ChartDataLabels){Chart.register(ChartDataLabels);Chart.defaults.set('plugins.datalabels',{display:false});}
 function svg(p,c){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="'+(c||'currentColor')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
 var SVG={
   users:svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
@@ -134,6 +136,11 @@ var SVG={
 };
 function resizeAll(){Object.values(CH).forEach(c=>{try{c.resize();}catch(e){}});}
 var _rt;window.addEventListener('resize',function(){clearTimeout(_rt);_rt=setTimeout(resizeAll,150);});
+var PALETTE=['#3b82f6','#10b981','#f59e0b','#8b5cf6','#f43f5e','#06b6d4','#eab308','#ec4899','#14b8a6','#f97316','#6366f1','#84cc16','#a855f7','#ef4444','#0ea5e9'];
+function colorsFor(n){var out=[];for(var i=0;i<n;i++)out.push(PALETTE[i%PALETTE.length]);return out;}
+function barLabelPlugin(horizontal){return {afterDatasetsDraw:function(chart){var ctx=chart.ctx;ctx.save();ctx.font='bold 10px Inter';ctx.fillStyle='#dde8f8';chart.data.datasets.forEach(function(ds,di){var meta=chart.getDatasetMeta(di);meta.data.forEach(function(el,i){var v=ds.data[i];if(v===null||v===undefined||v==='')return;if(horizontal){ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(v,el.x+6,el.y);}else{ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(v,el.x,el.y-4);}});});ctx.restore();}};}
+function lineLabelPlugin(){return {afterDatasetsDraw:function(chart){var ctx=chart.ctx;ctx.save();ctx.font='bold 10px Inter';ctx.fillStyle='#dde8f8';ctx.textAlign='center';ctx.textBaseline='bottom';var meta=chart.getDatasetMeta(0);meta.data.forEach(function(el,i){var v=chart.data.datasets[0].data[i];if(v===null||v===undefined)return;ctx.fillText(v,el.x,el.y-8);});ctx.restore();}};}
+
 
 
 function normBulan(v){if(v===null||v===undefined||v==='')return '';var s=String(v).trim();var m=s.match(/^(\d{4})-(\d{2})$/);if(m)return m[1]+'-'+m[2];if(/\d{4}-\d{2}-\d{2}/.test(s)){var d=new Date(s);if(!isNaN(d)){var l=new Date(d.getTime()+8*3600*1000);return l.getUTCFullYear()+'-'+String(l.getUTCMonth()+1).padStart(2,'0');}}return s;}
@@ -220,9 +227,9 @@ function renderCharts(data){
   var pk=Object.keys(byP).sort((a,b)=>byP[b]-byP[a]).slice(0,15);
   drawBarH('chartPK',pk,pk.map(k=>byP[k]),'#f43f5e');
 }
-function drawBar(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:c+'cc',borderRadius:6,maxBarThickness:48}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
-function drawBarH(id,l,v,c){if(CH[id])CH[id].destroy();var el=document.getElementById(id);el.parentElement.style.height=Math.max(200,l.length*30+50)+'px';CH[id]=new Chart(el,{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:c+'cc',borderRadius:5,maxBarThickness:24}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,resizeDelay:100,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}},y:{ticks:{font:{size:10}}}}}});}
-function drawLine(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'line',data:{labels:l,datasets:[{data:v,borderColor:c,backgroundColor:c+'22',fill:true,tension:.3,pointRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
+function drawBar(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:colorsFor(v.length),borderRadius:6,maxBarThickness:48}]},options:{layout:{padding:{top:20}},plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100},plugins:[barLabelPlugin(false)]});}
+function drawBarH(id,l,v,c){if(CH[id])CH[id].destroy();var el=document.getElementById(id);el.parentElement.style.height=Math.max(200,l.length*30+50)+'px';CH[id]=new Chart(el,{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:colorsFor(v.length),borderRadius:5,maxBarThickness:24}]},options:{indexAxis:'y',layout:{padding:{right:28}},responsive:true,maintainAspectRatio:false,resizeDelay:100,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}},y:{ticks:{font:{size:10}}}}},plugins:[barLabelPlugin(true)]});}
+function drawLine(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'line',data:{labels:l,datasets:[{data:v,borderColor:c,backgroundColor:c+'22',fill:true,tension:.3,pointRadius:4,pointBackgroundColor:c}]},options:{layout:{padding:{top:20}},plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100},plugins:[lineLabelPlugin()]});}
 
 function renderTable(data){
   document.getElementById('rowCount').textContent=data.length+' kunjungan';

@@ -6,6 +6,7 @@
 <title>BERSAHAJA — Overview</title>
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 .ov-wrap{max-width:1320px;margin:0 auto;padding:20px;padding-top:calc(var(--nav-h,64px) + 20px)}
 .filterbar{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:18px;display:flex;gap:16px;flex-wrap:wrap;align-items:end}
@@ -13,7 +14,7 @@
 .fg label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
 .fg select{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:12px;font-family:inherit;padding:8px 12px;border-radius:8px;outline:none;min-width:160px}
 .fg select:focus{border-color:var(--accent)}
-.kpi5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
+.kpi5{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 .kc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px}
 .kc .i{font-size:16px;margin-bottom:6px}
 .kc .v{font-size:24px;font-weight:800;line-height:1}
@@ -91,6 +92,7 @@ if(!TOKEN){ window.location.href='index.html'; }
 
 var DATA={oddp:[],cg:[],kader:[],nakes:[]}, CH={};
 Chart.defaults.color='#3a5575';Chart.defaults.borderColor='#1b2e4a';Chart.defaults.font.family="'Inter',system-ui,sans-serif";Chart.defaults.font.size=10;
+if(window.ChartDataLabels){Chart.register(ChartDataLabels);Chart.defaults.set('plugins.datalabels',{display:false});}
 
 /* ── SVG ICON SET ── */
 function svg(p,c){return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="'+(c||'currentColor')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
@@ -116,6 +118,11 @@ var SVG={
 
 function resizeAll(){ Object.values(CH).forEach(c=>{try{c.resize();}catch(e){}}); }
 var _rt; window.addEventListener('resize',function(){clearTimeout(_rt);_rt=setTimeout(resizeAll,150);});
+var PALETTE=['#3b82f6','#10b981','#f59e0b','#8b5cf6','#f43f5e','#06b6d4','#eab308','#ec4899','#14b8a6','#f97316','#6366f1','#84cc16','#a855f7','#ef4444','#0ea5e9'];
+function colorsFor(n){var out=[];for(var i=0;i<n;i++)out.push(PALETTE[i%PALETTE.length]);return out;}
+// Plugin angka di ujung bar
+function barLabelPlugin(horizontal){return {afterDatasetsDraw:function(chart){var ctx=chart.ctx;ctx.save();ctx.font='bold 10px Inter';ctx.fillStyle='#dde8f8';chart.data.datasets.forEach(function(ds,di){var meta=chart.getDatasetMeta(di);meta.data.forEach(function(el,i){var v=ds.data[i];if(v===null||v===undefined||v==='')return;if(horizontal){ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(v,el.x+6,el.y);}else{ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(v,el.x,el.y-4);}});});ctx.restore();}};}
+
 
 function normBulan(v){if(v===null||v===undefined||v==='')return '';var s=String(v).trim();var m=s.match(/^(\d{4})-(\d{2})$/);if(m)return m[1]+'-'+m[2];if(/\d{4}-\d{2}-\d{2}/.test(s)){var d=new Date(s);if(!isNaN(d)){var l=new Date(d.getTime()+8*3600*1000);return l.getUTCFullYear()+'-'+String(l.getUTCMonth()+1).padStart(2,'0');}}return s;}
 function bulanLabel(k){var kk=normBulan(k);var m=String(kk).match(/^(\d{4})-(\d{2})$/);if(!m)return kk;var A=['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];return A[parseInt(m[2])]+'-'+m[1].substring(2);}
@@ -153,7 +160,7 @@ function fetchAll(msg){
 
 function mapODDP(r){return{nama:String(r.nama||'').trim(),jk:normJK(r.jk),umur:parseInt(r.umur)||null,kab:String(r.kab||'').trim(),kec:String(r.kec||'').trim(),desa:String(r.desa||'').trim(),pk:String(r.pk||'').trim(),bulan:normBulan(r.bulan),bpjs:yn(r.bpjs),status:String(r.status||'').trim(),diag:normDiag(r.diagnosa),keparahan:normKeparahan(r.keparahan),faskes:yn(r.kunjungan_faskes)};}
 function mapCG(r){return{nama:String(r.nama||'').trim(),jk:normJK(r.jk),kab:String(r.kab||'').trim(),kec:String(r.kec||'').trim(),bulan:normBulan(r.bulan)};}
-function mapKN(r){return{jk:normJK(r.jk),kab:String(r.kab||'').trim(),kec:String(r.kec||'').trim(),bulan:normBulan(r.bulan)};}
+function mapKN(r){return{jk:normJK(r.jk),kab:String(r.kab||'').trim(),kec:String(r.kec||'').trim(),bulan:normBulan(r.bulan),kader:String(r.nama_kader||'').trim(),nakes:String(r.nama_nakes||'').trim()};}
 
 function uniq(a){return [...new Set(a)].filter(Boolean).sort();}
 function initFilters(){
@@ -177,12 +184,13 @@ function render(){
   var oU=dedupeODDP(o);
   var cgU=[...new Set(cg.map(r=>r.nama))].filter(Boolean).length;
 
+  var nKader=new Set(kd.map(r=>r.kader).filter(Boolean)).size;
+  var nNakes=new Set(nk.map(r=>r.nakes).filter(Boolean)).size;
   document.getElementById('kpi5').innerHTML=
     kc(SVG.brain,oU.length,'ODDP Terpantau','#3b82f6')+
     kc(SVG.hands,cgU,'Caregiver','#10b981')+
-    kc(SVG.users,kd.length,'Kunjungan Kader','#fbbf24')+
-    kc(SVG.steth,nk.length,'Kunjungan Nakes','#c084fc')+
-    kc(SVG.clip,kd.length+nk.length,'Total Kunjungan','#f43f5e');
+    kc(SVG.users,nKader,'Jumlah Kader','#fbbf24')+
+    kc(SVG.steth,nNakes,'Jumlah Nakes','#c084fc');
 
   document.getElementById('statusLine').textContent='Basis: '+oU.length+' ODDP unik';
 
@@ -218,9 +226,9 @@ function kc(i,v,l,c){return '<div class="kc"><div class="i">'+i+'</div><div clas
 function countBy(arr,f,keys){return {labels:keys,vals:keys.map(k=>arr.filter(r=>r[f]===k).length)};}
 function countByAuto(arr,f){var m={};arr.forEach(r=>{if(r[f])m[r[f]]=(m[r[f]]||0)+1;});var keys=Object.keys(m).sort((a,b)=>m[b]-m[a]);return{labels:keys,vals:keys.map(k=>m[k])};}
 
-function donut(id,c,colors){if(CH[id])CH[id].destroy();var total=c.vals.reduce((a,b)=>a+b,0);CH[id]=new Chart(document.getElementById(id),{type:'doughnut',data:{labels:c.labels,datasets:[{data:c.vals,backgroundColor:colors,borderColor:'#0c1625',borderWidth:2}]},options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:10,font:{size:10}}},tooltip:{callbacks:{label:x=>' '+x.label+': '+x.raw+(total?' ('+(x.raw/total*100).toFixed(0)+'%)':'')}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
-function barH(id,labels,vals,c){if(CH[id])CH[id].destroy();var el=document.getElementById(id);var box=el.parentElement;box.style.height=Math.max(180,labels.length*34+56)+'px';CH[id]=new Chart(el,{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:c+'cc',borderRadius:5,maxBarThickness:26}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}},y:{ticks:{font:{size:10}}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
-function barV(id,labels,vals,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:c+'cc',borderRadius:5,maxBarThickness:48}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
+function donut(id,c,colors){if(CH[id])CH[id].destroy();var total=c.vals.reduce((a,b)=>a+b,0);var donutLabel={afterDatasetsDraw:function(chart){var ctx=chart.ctx;ctx.save();ctx.font='bold 11px Inter';ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';var meta=chart.getDatasetMeta(0);meta.data.forEach(function(el,i){var v=chart.data.datasets[0].data[i];if(!v)return;var pos=el.tooltipPosition();ctx.fillText(v,pos.x,pos.y);});ctx.restore();}};CH[id]=new Chart(document.getElementById(id),{type:'doughnut',data:{labels:c.labels,datasets:[{data:c.vals,backgroundColor:colors,borderColor:'#0c1625',borderWidth:2}]},options:{cutout:'58%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:10,font:{size:10}}},tooltip:{callbacks:{label:x=>' '+x.label+': '+x.raw+(total?' ('+(x.raw/total*100).toFixed(0)+'%)':'')}}},responsive:true,maintainAspectRatio:false,resizeDelay:100},plugins:[donutLabel]});}
+function barH(id,labels,vals,c){if(CH[id])CH[id].destroy();var el=document.getElementById(id);var box=el.parentElement;box.style.height=Math.max(180,labels.length*34+56)+'px';CH[id]=new Chart(el,{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:colorsFor(vals.length),borderRadius:5,maxBarThickness:26}]},options:{indexAxis:'y',layout:{padding:{right:28}},plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}},y:{ticks:{font:{size:10}}}},responsive:true,maintainAspectRatio:false,resizeDelay:100},plugins:[barLabelPlugin(true)]});}
+function barV(id,labels,vals,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:colorsFor(vals.length),borderRadius:5,maxBarThickness:48}]},options:{layout:{padding:{top:20}},plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100},plugins:[barLabelPlugin(false)]});}
 function jkChart(o,cg,kd,nk){
   if(CH.cJK)CH.cJK.destroy();
   function cnt(arr,jk){return arr.filter(r=>r.jk===jk).length;}
