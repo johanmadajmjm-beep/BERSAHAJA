@@ -111,7 +111,8 @@ if(!TOKEN){ window.location.href='index.html'; }
 var RAW = [], CH = {};
 Chart.defaults.color='#3a5575';Chart.defaults.borderColor='#1b2e4a';Chart.defaults.font.family="'Inter',system-ui,sans-serif";Chart.defaults.font.size=10;
 
-function bulanLabel(k){var m=String(k).match(/^(\d{4})-(\d{2})$/);if(!m)return k;var A=['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];return A[parseInt(m[2])]+'-'+m[1].substring(2);}
+function normBulan(v){if(v===null||v===undefined||v==='')return '';var s=String(v).trim();var m=s.match(/^(\d{4})-(\d{2})$/);if(m)return m[1]+'-'+m[2];if(/\d{4}-\d{2}-\d{2}/.test(s)){var d=new Date(s);if(!isNaN(d)){var l=new Date(d.getTime()+8*3600*1000);return l.getUTCFullYear()+'-'+String(l.getUTCMonth()+1).padStart(2,'0');}}return s;}
+function bulanLabel(k){var kk=normBulan(k);var m=String(kk).match(/^(\d{4})-(\d{2})$/);if(!m)return kk;var A=['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];return A[parseInt(m[2])]+'-'+m[1].substring(2);}
 
 window.addEventListener('DOMContentLoaded', function(){ fetchData(false); });
 function doLogout(){localStorage.clear();window.location.href='index.html';}
@@ -128,7 +129,7 @@ function fetchData(msg){
       nakes:String(r.nama_nakes||'').trim(), jabatan:String(r.jabatan||'').trim(), jk:String(r.jk||'').trim(),
       kontak:String(r.kontak||'').trim(), asal_pk:String(r.asal_pk||'').trim(),
       kab:String(r.kab||'').trim(), kec:String(r.kec||'').trim(), desa:String(r.desa||'').trim(),
-      bulan:String(r.bulan||'').trim(), oddp:String(r.nama_oddp||'').trim(),
+      bulan:normBulan(r.bulan), oddp:String(r.nama_oddp||'').trim(),
       tgl:String(r.tgl_kunjungan||'').trim(), kunjungan:String(r.kunjungan||'').trim(),
       observasi:String(r.hasil_observasi||'').trim(), tantangan:String(r.tantangan||'').trim(),
       rtl:String(r.rtl||'').trim(), co:String(r.co||'').trim()

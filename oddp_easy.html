@@ -212,12 +212,31 @@ const KPI_DEFS=[
 /* ── BULAN HELPERS (data sudah YYYY-MM dari GAS) ── */
 const BULAN_ABBR=['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 
+/* Normalisasi bulan → "YYYY-MM".
+   Tangani: "2025-07", ISO "2025-06-30T16:00:00.000Z" (Sheets auto-convert, WITA +8), Date, "2025-07-01" */
+function normBulan(v){
+  if(v===null||v===undefined||v==='')return '';
+  var s=String(v).trim();
+  var m=s.match(/^(\d{4})-(\d{2})$/);
+  if(m)return m[1]+'-'+m[2];
+  // ISO datetime / tanggal penuh → koreksi ke WITA (+8) lalu ambil bulan
+  if(/\d{4}-\d{2}-\d{2}/.test(s)){
+    var d=new Date(s);
+    if(!isNaN(d)){
+      var local=new Date(d.getTime()+8*3600*1000);
+      return local.getUTCFullYear()+'-'+String(local.getUTCMonth()+1).padStart(2,'0');
+    }
+  }
+  return s;
+}
 function parseBulanKey(key){ // "2025-03" → {year:2025,month:3}
-  if(!key)return null;
-  const m=String(key).match(/^(\d{4})-(\d{2})$/);
+  var k=normBulan(key);
+  var m=String(k).match(/^(\d{4})-(\d{2})$/);
   if(m)return{year:parseInt(m[1]),month:parseInt(m[2])};
   return null;
 }
+/* Normalisasi jenis kelamin → "L" / "P" */
+function normJK(v){var s=String(v||'').trim().toUpperCase();if(s.charAt(0)==='L')return'L';if(s.charAt(0)==='P')return'P';return s;}
 function bulanToLabel(key){
   const p=parseBulanKey(key);
   if(!p)return key;
@@ -260,14 +279,14 @@ function refreshData(){fetchFromGAS(true);}
 function mapGASRows(rows){
   // GAS rows sudah normalized (key = nama, kab, kec, ... adl, peng, dst)
   RAW=rows.map(r=>{
-    const bulan=String(r.bulan||'').trim();
+    const bulan=normBulan(r.bulan);
     return {
       _nama:      String(r.nama||'').trim(),
       _kab:       String(r.kab||'').trim(),
       _kec:       String(r.kec||'').trim(),
       _pk:        String(r.pk||'').trim(),
       _desa:      String(r.desa||'').trim(),
-      _jk:        String(r.jk||'').trim(),
+      _jk:        normJK(r.jk),
       _bulan:     bulan,
       _bulanLabel:bulanToLabel(bulan),
       _tahun:     bulanToTahun(bulan),
