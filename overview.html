@@ -55,22 +55,23 @@
   <div class="kpi5" id="kpi5">
     <div class="kc"><div class="i">⏳</div><div class="v">–</div><div class="l">Memuat data dari server...</div></div>
   </div>
+  <div class="kpi5" id="kpi5b" style="display:none"></div>
 
   <div id="charts" style="display:none">
     <div class="grid3">
-      <div class="cc"><h3>🏥 Cakupan BPJS (ODDP)</h3><div class="cbox"><canvas id="cBpjs"></canvas></div></div>
-      <div class="cc"><h3>🧭 Status Klinis ODDP</h3><div class="cbox"><canvas id="cStatus"></canvas></div></div>
-      <div class="cc"><h3>🚪 Akses ke Faskes</h3><div class="cbox"><canvas id="cFaskes"></canvas></div></div>
+      <div class="cc"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M4 22V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v18Z"/><path d="M12 6v4"/><path d="M14 8h-4"/></svg>Cakupan BPJS (ODDP)</h3><div class="cbox"><canvas id="cBpjs"></canvas></div></div>
+      <div class="cc"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>Status Klinis ODDP</h3><div class="cbox"><canvas id="cStatus"></canvas></div></div>
+      <div class="cc"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M13 4h3a2 2 0 0 1 2 2v14"/><path d="M2 20h20"/><path d="M13 4.6a2 2 0 0 0-2.5-1.9l-4 1A2 2 0 0 0 5 5.6V20h8Z"/></svg>Akses ke Faskes</h3><div class="cbox"><canvas id="cFaskes"></canvas></div></div>
     </div>
     <div class="grid2">
-      <div class="cc"><h3>🩺 Distribusi Diagnosa</h3><div class="cbox tall"><canvas id="cDiag"></canvas></div></div>
-      <div class="cc"><h3>⚠️ Tingkat Keparahan</h3><div class="cbox tall"><canvas id="cKeparahan"></canvas></div></div>
+      <div class="cc"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 12 0V4a2 2 0 0 0-2-2h-1"/><circle cx="20" cy="10" r="2"/></svg>Distribusi Diagnosa</h3><div class="cbox tall"><canvas id="cDiag"></canvas></div></div>
+      <div class="cc"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>Tingkat Keparahan</h3><div class="cbox tall"><canvas id="cKeparahan"></canvas></div></div>
     </div>
     <div class="grid2">
-      <div class="cc"><h3>👥 Distribusi Umur ODDP</h3><div class="cbox"><canvas id="cUmur"></canvas></div></div>
-      <div class="cc"><h3>⚧ Jenis Kelamin per Program</h3><div class="cbox"><canvas id="cJK"></canvas></div></div>
+      <div class="cc"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>Distribusi Umur ODDP</h3><div class="cbox"><canvas id="cUmur"></canvas></div></div>
+      <div class="cc"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><circle cx="12" cy="10" r="5"/><path d="M12 15v7"/><path d="M9 19h6"/></svg>Jenis Kelamin per Program</h3><div class="cbox"><canvas id="cJK"></canvas></div></div>
     </div>
-    <div class="cc" style="margin-bottom:14px"><h3>📍 Sebaran ODDP per Kecamatan</h3><div class="cbox tall"><canvas id="cKec"></canvas></div></div>
+    <div class="cc" style="margin-bottom:14px"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Sebaran ODDP per Kecamatan</h3><div class="cbox tall"><canvas id="cKec"></canvas></div></div>
   </div>
 </div>
 
@@ -84,11 +85,36 @@ if(!TOKEN){ window.location.href='index.html'; }
 var DATA={oddp:[],cg:[],kader:[],nakes:[]}, CH={};
 Chart.defaults.color='#3a5575';Chart.defaults.borderColor='#1b2e4a';Chart.defaults.font.family="'Inter',system-ui,sans-serif";Chart.defaults.font.size=10;
 
+/* ── SVG ICON SET ── */
+function svg(p,c){return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="'+(c||'currentColor')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
+var SVG={
+  brain:svg('<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>'),
+  hands:svg('<path d="M11 14h2a2 2 0 0 0 2-2 2 2 0 0 0-2-2H9.83a2 2 0 0 0-1.42.59L5 14"/><path d="m7 20 1.5-1.5"/><path d="M17 14l3-3"/><path d="M3 16l4 4"/>'),
+  users:svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
+  steth:svg('<path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6 6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6 6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/>'),
+  clip:svg('<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14l2 2 4-4"/>'),
+  shield:svg('<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>'),
+  compass:svg('<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>'),
+  door:svg('<path d="M13 4h3a2 2 0 0 1 2 2v14"/><path d="M2 20h3"/><path d="M13 20h9"/><path d="M10 12v.01"/><path d="M13 4.562v16.157a1 1 0 0 1-1.242.97L5 20V5.562a2 2 0 0 1 1.515-1.94l4-1A2 2 0 0 1 13 4.561Z"/>'),
+  pill:svg('<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>'),
+  warn:svg('<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>'),
+  age:svg('<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>'),
+  gender:svg('<circle cx="12" cy="10" r="5"/><path d="M12 15v7"/><path d="M9 19h6"/>'),
+  pin:svg('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>'),
+  map:svg('<path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/>'),
+  home:svg('<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'),
+  hosp:svg('<path d="M12 6v4"/><path d="M14 8h-4"/><path d="M4 22V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v18Z"/><path d="M10 22v-3a2 2 0 1 1 4 0v3"/>'),
+  chart:svg('<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>')
+};
+
+function resizeAll(){ Object.values(CH).forEach(c=>{try{c.resize();}catch(e){}}); }
+var _rt; window.addEventListener('resize',function(){clearTimeout(_rt);_rt=setTimeout(resizeAll,150);});
+
 function normBulan(v){if(v===null||v===undefined||v==='')return '';var s=String(v).trim();var m=s.match(/^(\d{4})-(\d{2})$/);if(m)return m[1]+'-'+m[2];if(/\d{4}-\d{2}-\d{2}/.test(s)){var d=new Date(s);if(!isNaN(d)){var l=new Date(d.getTime()+8*3600*1000);return l.getUTCFullYear()+'-'+String(l.getUTCMonth()+1).padStart(2,'0');}}return s;}
 function bulanLabel(k){var kk=normBulan(k);var m=String(kk).match(/^(\d{4})-(\d{2})$/);if(!m)return kk;var A=['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];return A[parseInt(m[2])]+'-'+m[1].substring(2);}
 function normJK(v){var s=String(v||'').trim().toUpperCase();if(s.charAt(0)==='L')return'L';if(s.charAt(0)==='P')return'P';return '';}
 function yn(v){var s=String(v||'').trim().toLowerCase();if(s==='ya'||s==='y')return'Ya';if(s==='tidak'||s==='t')return'Tidak';return '';}
-function normDiag(d){var s=String(d||'').trim().toLowerCase();if(!s)return '';if(s.indexOf('skiz')>=0)return'Skizofrenia';if(s.indexOf('bipolar')>=0)return'Bipolar';if(s.indexOf('depres')>=0)return'Depresi';if(s.indexOf('cemas')>=0||s.indexOf('anxiet')>=0)return'Gangguan Cemas';if(s.indexOf('perkembang')>=0)return'Gangguan Perkembangan';if(s.indexOf('psikotik')>=0)return'Psikotik Lain';return'Lainnya';}
+function normDiag(d){var s=String(d||'').trim().toLowerCase().replace(/\s+/g,' ');if(!s)return '';if(/sk[iy]?[sz]of|skizof|skisof|schizo/.test(s))return'Skizofrenia';if(s.indexOf('bipolar')>=0)return'Bipolar';if(s.indexOf('depres')>=0)return'Depresi';if(s.indexOf('cemas')>=0||s.indexOf('anxiet')>=0)return'Gangguan Cemas';if(s.indexOf('perkembang')>=0)return'Gangguan Perkembangan';if(s.indexOf('psikotik')>=0||s.indexOf('psikosis')>=0)return'Psikotik Lain';if(s.indexOf('epilep')>=0)return'Epilepsi';if(s.indexOf('retard')>=0||s.indexOf('disabilitas intelekt')>=0)return'Retardasi Mental';return d?String(d).trim():'';}
 function normKeparahan(v){var s=String(v||'').trim().toLowerCase();if(s.indexOf('ringan')>=0)return'Ringan';if(s.indexOf('sedang')>=0)return'Sedang';if(s.indexOf('berat')>=0)return'Berat';return '';}
 
 window.addEventListener('DOMContentLoaded', function(){ fetchAll(false); });
@@ -117,7 +143,7 @@ function fetchAll(msg){
   }).catch(function(e){ if(btn){btn.textContent='🔄 Refresh';btn.disabled=false;} showToast('⚠️ Gagal terhubung: '+e.message); });
 }
 
-function mapODDP(r){return{nama:String(r.nama||'').trim(),jk:normJK(r.jk),umur:parseInt(r.umur)||null,kab:String(r.kab||'').trim(),kec:String(r.kec||'').trim(),bulan:normBulan(r.bulan),bpjs:yn(r.bpjs),status:String(r.status||'').trim(),diag:normDiag(r.diagnosa),keparahan:normKeparahan(r.keparahan),faskes:yn(r.kunjungan_faskes)};}
+function mapODDP(r){return{nama:String(r.nama||'').trim(),jk:normJK(r.jk),umur:parseInt(r.umur)||null,kab:String(r.kab||'').trim(),kec:String(r.kec||'').trim(),desa:String(r.desa||'').trim(),pk:String(r.pk||'').trim(),bulan:normBulan(r.bulan),bpjs:yn(r.bpjs),status:String(r.status||'').trim(),diag:normDiag(r.diagnosa),keparahan:normKeparahan(r.keparahan),faskes:yn(r.kunjungan_faskes)};}
 function mapCG(r){return{nama:String(r.nama||'').trim(),jk:normJK(r.jk),kab:String(r.kab||'').trim(),kec:String(r.kec||'').trim(),bulan:normBulan(r.bulan)};}
 function mapKN(r){return{jk:normJK(r.jk),kab:String(r.kab||'').trim(),kec:String(r.kec||'').trim(),bulan:normBulan(r.bulan)};}
 
@@ -144,13 +170,26 @@ function render(){
   var cgU=[...new Set(cg.map(r=>r.nama))].filter(Boolean).length;
 
   document.getElementById('kpi5').innerHTML=
-    kc('🧠',oU.length,'ODDP Terpantau','#3b82f6')+
-    kc('🤝',cgU,'Caregiver','#10b981')+
-    kc('🧑‍🤝‍🧑',kd.length,'Kunjungan Kader','#fbbf24')+
-    kc('⚕️',nk.length,'Kunjungan Nakes','#c084fc')+
-    kc('📋',kd.length+nk.length,'Total Kunjungan','#f43f5e');
+    kc(SVG.brain,oU.length,'ODDP Terpantau','#3b82f6')+
+    kc(SVG.hands,cgU,'Caregiver','#10b981')+
+    kc(SVG.users,kd.length,'Kunjungan Kader','#fbbf24')+
+    kc(SVG.steth,nk.length,'Kunjungan Nakes','#c084fc')+
+    kc(SVG.clip,kd.length+nk.length,'Total Kunjungan','#f43f5e');
 
   document.getElementById('statusLine').textContent='Basis: '+oU.length+' ODDP unik';
+
+  // Baris KPI cakupan wilayah
+  var kab=new Set(),kec=new Set(),desa=new Set(),pk=new Set();
+  [].concat(o,cg,kd,nk).forEach(r=>{if(r.kab)kab.add(r.kab);if(r.kec)kec.add(r.kec);});
+  oU.forEach(r=>{if(r.desa)desa.add(r.desa);if(r.pk)pk.add(r.pk);});
+  var kb=document.getElementById('kpi5b');
+  kb.style.display='grid';
+  kb.innerHTML=
+    kc(SVG.pin,kab.size,'Kabupaten','#3b82f6')+
+    kc(SVG.map,kec.size,'Kecamatan','#10b981')+
+    kc(SVG.home,desa.size,'Desa','#8b5cf6')+
+    kc(SVG.hosp,pk.size,'Puskesmas','#f59e0b')+
+    kc(SVG.chart,DATA.oddp.length+DATA.cg.length,'Total Baris Data','#f43f5e');
 
   donut('cBpjs', countBy(oU,'bpjs',['Ya','Tidak']), ['#10b981','#f43f5e']);
   donut('cStatus', countBy(oU,'status',['Stabil','Belum Stabil','Amuk']), ['#10b981','#f59e0b','#f43f5e']);
@@ -178,9 +217,9 @@ function kc(i,v,l,c){return '<div class="kc"><div class="i">'+i+'</div><div clas
 function countBy(arr,f,keys){return {labels:keys,vals:keys.map(k=>arr.filter(r=>r[f]===k).length)};}
 function countByAuto(arr,f){var m={};arr.forEach(r=>{if(r[f])m[r[f]]=(m[r[f]]||0)+1;});var keys=Object.keys(m).sort((a,b)=>m[b]-m[a]);return{labels:keys,vals:keys.map(k=>m[k])};}
 
-function donut(id,c,colors){if(CH[id])CH[id].destroy();var total=c.vals.reduce((a,b)=>a+b,0);CH[id]=new Chart(document.getElementById(id),{type:'doughnut',data:{labels:c.labels,datasets:[{data:c.vals,backgroundColor:colors,borderColor:'#0c1625',borderWidth:2}]},options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:10,font:{size:10}}},tooltip:{callbacks:{label:x=>' '+x.label+': '+x.raw+(total?' ('+(x.raw/total*100).toFixed(0)+'%)':'')}}},maintainAspectRatio:false}});}
-function barH(id,labels,vals,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:c+'cc',borderRadius:5}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}}},maintainAspectRatio:false}});}
-function barV(id,labels,vals,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:c+'cc',borderRadius:5}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},maintainAspectRatio:false}});}
+function donut(id,c,colors){if(CH[id])CH[id].destroy();var total=c.vals.reduce((a,b)=>a+b,0);CH[id]=new Chart(document.getElementById(id),{type:'doughnut',data:{labels:c.labels,datasets:[{data:c.vals,backgroundColor:colors,borderColor:'#0c1625',borderWidth:2}]},options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:10,font:{size:10}}},tooltip:{callbacks:{label:x=>' '+x.label+': '+x.raw+(total?' ('+(x.raw/total*100).toFixed(0)+'%)':'')}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
+function barH(id,labels,vals,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:c+'cc',borderRadius:5}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
+function barV(id,labels,vals,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:c+'cc',borderRadius:5}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
 function jkChart(o,cg,kd,nk){
   if(CH.cJK)CH.cJK.destroy();
   function cnt(arr,jk){return arr.filter(r=>r.jk===jk).length;}
@@ -188,7 +227,7 @@ function jkChart(o,cg,kd,nk){
   CH.cJK=new Chart(document.getElementById('cJK'),{type:'bar',data:{labels:progs,datasets:[
     {label:'Laki-laki',data:sets.map(s=>cnt(s,'L')),backgroundColor:'#3b82f6cc',borderRadius:4},
     {label:'Perempuan',data:sets.map(s=>cnt(s,'P')),backgroundColor:'#f43f5ecc',borderRadius:4}
-  ]},options:{plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},maintainAspectRatio:false}});
+  ]},options:{plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});
 }
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}

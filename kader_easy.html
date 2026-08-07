@@ -119,6 +119,18 @@ if(!TOKEN){ window.location.href='index.html'; }
 var RAW=[], CH={};
 var SEL={bulan:new Set(),kab:new Set(),kec:new Set(),pk:new Set(),desa:new Set()};
 Chart.defaults.color='#3a5575';Chart.defaults.borderColor='#1b2e4a';Chart.defaults.font.family="'Inter',system-ui,sans-serif";Chart.defaults.font.size=10;
+function svg(p,c){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="'+(c||'currentColor')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
+var SVG={
+  users:svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
+  clip:svg('<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>'),
+  brain:svg('<path d="M12 5a3 3 0 1 0-5.997.142 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.142 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>'),
+  pin:svg('<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>'),
+  hosp:svg('<path d="M12 6v4"/><path d="M14 8h-4"/><path d="M4 22V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v18Z"/><path d="M10 22v-3a2 2 0 1 1 4 0v3"/>'),
+  steth:svg('<path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 12 0V4a2 2 0 0 0-2-2h-1"/><path d="M8 15v1a6 6 0 0 0 12 0v-4"/><circle cx="20" cy="10" r="2"/>')
+};
+function resizeAll(){Object.values(CH).forEach(c=>{try{c.resize();}catch(e){}});}
+var _rt;window.addEventListener('resize',function(){clearTimeout(_rt);_rt=setTimeout(resizeAll,150);});
+
 
 function normBulan(v){if(v===null||v===undefined||v==='')return '';var s=String(v).trim();var m=s.match(/^(\d{4})-(\d{2})$/);if(m)return m[1]+'-'+m[2];if(/\d{4}-\d{2}-\d{2}/.test(s)){var d=new Date(s);if(!isNaN(d)){var l=new Date(d.getTime()+8*3600*1000);return l.getUTCFullYear()+'-'+String(l.getUTCMonth()+1).padStart(2,'0');}}return s;}
 function bulanLabel(k){var kk=normBulan(k);var m=String(kk).match(/^(\d{4})-(\d{2})$/);if(!m)return kk;var A=['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];return A[parseInt(m[2])]+'-'+m[1].substring(2);}
@@ -177,11 +189,11 @@ function getFiltered(){
 function render(){
   var data=getFiltered();
   document.getElementById('kpiGrid').innerHTML=
-    kpi('🧑‍🤝‍🧑',uc(data,'kader'),'Total Kader','#fbbf24')+
-    kpi('📋',data.length,'Total Kunjungan','#3b82f6')+
-    kpi('🧠',uc(data,'oddp'),'ODDP Terjangkau','#10b981')+
-    kpi('📍',uc(data,'desa'),'Desa Terlayani','#8b5cf6')+
-    kpi('🏥',uc(data,'pk'),'Puskesmas','#f43f5e');
+    kpi(SVG.users,uc(data,'kader'),'Total Kader','#fbbf24')+
+    kpi(SVG.clip,data.length,'Total Kunjungan','#3b82f6')+
+    kpi(SVG.brain,uc(data,'oddp'),'ODDP Terjangkau','#10b981')+
+    kpi(SVG.pin,uc(data,'desa'),'Desa Terlayani','#8b5cf6')+
+    kpi(SVG.hosp,uc(data,'pk'),'Puskesmas','#f43f5e');
   renderCharts(data); renderTable(data);
 }
 function kpi(ic,v,l,c){return '<div class="kpi-card"><div class="ki">'+ic+'</div><div class="kv" style="color:'+c+'">'+v+'</div><div class="kl">'+l+'</div></div>';}
@@ -195,8 +207,8 @@ function renderCharts(data){
   var bk=Object.keys(byB).sort();
   drawLine('chartBulan',bk.map(bulanLabel),bk.map(k=>byB[k]),'#f59e0b');
 }
-function drawBar(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:c+'cc',borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},maintainAspectRatio:false}});}
-function drawLine(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'line',data:{labels:l,datasets:[{data:v,borderColor:c,backgroundColor:c+'22',fill:true,tension:.3,pointRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},maintainAspectRatio:false}});}
+function drawBar(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:c+'cc',borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
+function drawLine(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'line',data:{labels:l,datasets:[{data:v,borderColor:c,backgroundColor:c+'22',fill:true,tension:.3,pointRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
 
 function renderTable(data){
   document.getElementById('rowCount').textContent=data.length+' baris';
