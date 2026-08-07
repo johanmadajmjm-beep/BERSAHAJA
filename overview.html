@@ -13,18 +13,19 @@
 .fg label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
 .fg select{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:12px;font-family:inherit;padding:8px 12px;border-radius:8px;outline:none;min-width:160px}
 .fg select:focus{border-color:var(--accent)}
-.kpi5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
-.kc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px}
-.kc .i{font-size:20px;margin-bottom:8px}
-.kc .v{font-size:30px;font-weight:800;line-height:1}
-.kc .l{font-size:11px;color:var(--text2);margin-top:6px}
+.kpi5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
+.kc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px}
+.kc .i{font-size:16px;margin-bottom:6px}
+.kc .v{font-size:24px;font-weight:800;line-height:1}
+.kc .l{font-size:10px;color:var(--text2);margin-top:4px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
 .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:14px}
 .cc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px}
 .cc h3{font-size:12.5px;font-weight:700;margin-bottom:14px}
-.cbox{position:relative;height:220px}
-.cbox.tall{height:280px}
-@media(max-width:1000px){.kpi5{grid-template-columns:repeat(2,1fr)}.grid3,.grid2{grid-template-columns:1fr}}
+.cbox{position:relative;height:260px}
+.cbox.tall{height:260px}
+@media(max-width:1000px){.grid3,.grid2{grid-template-columns:1fr}}
+@media(max-width:640px){.kpi5{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -142,9 +143,10 @@ function fetchAll(msg){
     DATA.cg   =(res[1].rows||[]).map(mapCG);
     DATA.kader=(res[2].rows||[]).map(mapKN);
     DATA.nakes=(res[3].rows||[]).map(mapKN);
-    initFilters(); render();
     document.getElementById('filterbar').style.display='flex';
     document.getElementById('charts').style.display='block';
+    initFilters(); render();
+    requestAnimationFrame(function(){ resizeAll(); });
     if(msg!==false)showToast('✅ Data dimuat: ODDP '+DATA.oddp.length+' · CG '+DATA.cg.length+' · Kader '+DATA.kader.length+' · Nakes '+DATA.nakes.length);
   }).catch(function(e){ if(btn){btn.textContent='🔄 Refresh';btn.disabled=false;} showToast('⚠️ Gagal terhubung: '+e.message); });
 }
@@ -217,8 +219,8 @@ function countBy(arr,f,keys){return {labels:keys,vals:keys.map(k=>arr.filter(r=>
 function countByAuto(arr,f){var m={};arr.forEach(r=>{if(r[f])m[r[f]]=(m[r[f]]||0)+1;});var keys=Object.keys(m).sort((a,b)=>m[b]-m[a]);return{labels:keys,vals:keys.map(k=>m[k])};}
 
 function donut(id,c,colors){if(CH[id])CH[id].destroy();var total=c.vals.reduce((a,b)=>a+b,0);CH[id]=new Chart(document.getElementById(id),{type:'doughnut',data:{labels:c.labels,datasets:[{data:c.vals,backgroundColor:colors,borderColor:'#0c1625',borderWidth:2}]},options:{cutout:'62%',plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:10,font:{size:10}}},tooltip:{callbacks:{label:x=>' '+x.label+': '+x.raw+(total?' ('+(x.raw/total*100).toFixed(0)+'%)':'')}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
-function barH(id,labels,vals,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:c+'cc',borderRadius:5}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
-function barV(id,labels,vals,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:c+'cc',borderRadius:5}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
+function barH(id,labels,vals,c){if(CH[id])CH[id].destroy();var el=document.getElementById(id);var box=el.parentElement;box.style.height=Math.max(180,labels.length*34+56)+'px';CH[id]=new Chart(el,{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:c+'cc',borderRadius:5,maxBarThickness:26}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}},y:{ticks:{font:{size:10}}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
+function barV(id,labels,vals,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:c+'cc',borderRadius:5,maxBarThickness:48}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
 function jkChart(o,cg,kd,nk){
   if(CH.cJK)CH.cJK.destroy();
   function cnt(arr,jk){return arr.filter(r=>r.jk===jk).length;}

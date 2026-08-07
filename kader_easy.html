@@ -102,20 +102,13 @@
     <div class="card"><div class="c-ttl">Kunjungan per Bulan</div><div class="chart-box"><canvas id="chartBulan"></canvas></div></div>
   </div>
   <div class="chart-grid">
-    <div class="card"><div class="c-ttl">Kunjungan per Desa (Top 15)</div><div class="chart-box" style="height:320px"><canvas id="chartDesa"></canvas></div></div>
-    <div class="card"><div class="c-ttl">Kunjungan per Puskesmas</div><div class="chart-box" style="height:320px"><canvas id="chartPK"></canvas></div></div>
+    <div class="card"><div class="c-ttl">Kunjungan per Desa (Top 15)</div><div class="chart-box"><canvas id="chartDesa"></canvas></div></div>
+    <div class="card"><div class="c-ttl">Kunjungan per Puskesmas</div><div class="chart-box"><canvas id="chartPK"></canvas></div></div>
   </div>
   <div class="card">
-    <div class="c-ttl">📋 Detail Kunjungan Kader <span class="kbadge" id="rowCount"></span></div>
-    <div class="tbl-wrap" style="margin-top:10px">
-      <table class="dtbl">
-        <thead><tr>
-          <th>Kader</th><th>Wilayah</th><th>Bulan</th><th>ODDP Dikunjungi</th>
-          <th>Tgl Kunj 1</th><th>Tgl Kunj 2</th><th>Hasil Observasi</th><th>Tantangan</th><th>RTL</th><th>CO</th>
-        </tr></thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
+    <div class="c-ttl" style="display:flex;align-items:center;gap:8px">📋 Laporan Naratif Kunjungan Kader <span class="kbadge" id="rowCount"></span></div>
+    <div id="narasiSummary" style="margin-top:12px"></div>
+    <div id="narasiList" style="margin-top:14px;display:flex;flex-direction:column;gap:12px"></div>
   </div>
 </div>
 </div>
@@ -165,9 +158,10 @@ function fetchData(msg){
       bulan:normBulan(r.bulan), oddp:String(r.nama_oddp||'').trim(),
       tgl1:String(r.tgl_kunjungan1||'').trim(), tgl2:String(r.tgl_kunjungan2||'').trim(),
       observasi:String(r.hasil_observasi||'').trim(), tantangan:String(r.tantangan||'').trim(),
-      rtl:String(r.rtl||'').trim(), co:String(r.co||'').trim()
+      rtl:String(r.rtl||'').trim(), catatan:String(r.catatan||'').trim(), co:String(r.co||'').trim()
     };}).filter(r=>r.kader);
     initFilters(); render();
+    requestAnimationFrame(function(){ resizeAll(); });
     if(msg!==false)showToast('✅ Data Kader dimuat: '+RAW.length+' baris');
   }).catch(function(e){ if(btn){btn.textContent='🔄 Refresh';btn.disabled=false;} showToast('⚠️ Gagal terhubung: '+e.message); });
 }
@@ -226,19 +220,69 @@ function renderCharts(data){
   var pk=Object.keys(byP).sort((a,b)=>byP[b]-byP[a]).slice(0,15);
   drawBarH('chartPK',pk,pk.map(k=>byP[k]),'#f43f5e');
 }
-function drawBar(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:c+'cc',borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
-function drawBarH(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:c+'cc',borderRadius:5}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,resizeDelay:100,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}}}}});}
+function drawBar(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:c+'cc',borderRadius:6,maxBarThickness:48}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
+function drawBarH(id,l,v,c){if(CH[id])CH[id].destroy();var el=document.getElementById(id);el.parentElement.style.height=Math.max(200,l.length*30+50)+'px';CH[id]=new Chart(el,{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:c+'cc',borderRadius:5,maxBarThickness:24}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,resizeDelay:100,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}},y:{ticks:{font:{size:10}}}}}});}
 function drawLine(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'line',data:{labels:l,datasets:[{data:v,borderColor:c,backgroundColor:c+'22',fill:true,tension:.3,pointRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
 
 function renderTable(data){
-  document.getElementById('rowCount').textContent=data.length+' baris';
-  if(!data.length){document.getElementById('tbody').innerHTML='<tr><td colspan="10" style="padding:30px;text-align:center;color:var(--text3)">Tidak ada data untuk filter ini.</td></tr>';return;}
-  document.getElementById('tbody').innerHTML=data.map(r=>
-    '<tr><td><strong>'+esc(r.kader)+'</strong>'+(r.kontak?'<br><span style="color:var(--text3);font-size:9px">'+esc(r.kontak)+'</span>':'')+'</td>'+
-    '<td>'+esc(r.kec)+'<br><span style="color:var(--text3);font-size:9px">'+esc(r.desa)+'</span></td>'+
-    '<td>'+esc(bulanLabel(r.bulan))+'</td><td>'+esc(r.oddp)+'</td><td>'+esc(r.tgl1)+'</td><td>'+esc(r.tgl2)+'</td>'+
-    '<td class="cell-long">'+esc(r.observasi)+'</td><td class="cell-long">'+esc(r.tantangan)+'</td><td class="cell-long">'+esc(r.rtl)+'</td><td>'+esc(r.co)+'</td></tr>'
-  ).join('');
+  document.getElementById('rowCount').textContent=data.length+' kunjungan';
+  var sEl=document.getElementById('narasiSummary'), lEl=document.getElementById('narasiList');
+  if(!data.length){ sEl.innerHTML=''; lEl.innerHTML='<div style="padding:30px;text-align:center;color:var(--text3);font-size:13px">Tidak ada data untuk filter ini.</div>'; return; }
+
+  var nKader=new Set(data.map(r=>r.kader).filter(Boolean)).size;
+  var nOddp=new Set(data.map(r=>r.oddp).filter(Boolean)).size;
+  var nDesa=new Set(data.map(r=>r.desa).filter(Boolean)).size;
+  var nPK=new Set(data.map(r=>r.pk).filter(Boolean)).size;
+  var adaObs=data.filter(r=>r.observasi).length;
+  var adaTantangan=data.filter(r=>r.tantangan).length;
+  var adaRTL=data.filter(r=>r.rtl).length;
+  var adaCatatan=data.filter(r=>r.catatan).length;
+  var periode=[...new Set(data.map(r=>r.bulan).filter(Boolean))].sort().map(bulanLabel).join(', ');
+
+  sEl.innerHTML=
+    '<div style="background:linear-gradient(135deg,rgba(251,191,36,.08),rgba(245,158,11,.04));border:1px solid rgba(251,191,36,.2);border-radius:12px;padding:16px 18px;font-size:13px;line-height:1.9;color:var(--text2);margin-bottom:12px">'+
+      'Selama periode <strong style="color:var(--text)">'+esc(periode||'-')+'</strong>, sebanyak <strong style="color:#fbbf24">'+nKader+' kader</strong> melakukan <strong style="color:#fbbf24">'+data.length+' kunjungan</strong> kepada <strong style="color:#fbbf24">'+nOddp+' ODDP</strong> di <strong style="color:#fbbf24">'+nDesa+' desa</strong> (cakupan '+nPK+' puskesmas). '+
+      'Terdokumentasi <strong style="color:#3b82f6">'+adaObs+'</strong> hasil observasi, <strong style="color:#f59e0b">'+adaTantangan+'</strong> tantangan lapangan, dan <strong style="color:#10b981">'+adaRTL+'</strong> rencana tindak lanjut.'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">'+
+      miniStat('Observasi Terisi',adaObs,data.length,'#3b82f6')+
+      miniStat('Ada Tantangan',adaTantangan,data.length,'#f59e0b')+
+      miniStat('RTL Tersusun',adaRTL,data.length,'#10b981')+
+      miniStat('Catatan Tambahan',adaCatatan,data.length,'#8b5cf6')+
+    '</div>';
+
+  var sorted=data.slice().sort(function(a,b){return (b.tantangan?1:0)-(a.tantangan?1:0);});
+  lEl.innerHTML=sorted.map(function(r){
+    var blocks='';
+    if(r.observasi) blocks+=narBlock('Hasil Observasi','#3b82f6',r.observasi);
+    if(r.tantangan) blocks+=narBlock('Tantangan','#f59e0b',r.tantangan);
+    if(r.rtl)       blocks+=narBlock('Rencana Tindak Lanjut','#10b981',r.rtl);
+    if(r.catatan)   blocks+=narBlock('Catatan','#8b5cf6',r.catatan);
+    if(!blocks) blocks='<div style="font-size:11px;color:var(--text3);font-style:italic">Tidak ada catatan observasi/tantangan/RTL.</div>';
+    var flag=r.tantangan?'<span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;display:inline-block" title="Ada tantangan"></span>':'';
+    var tgl=[r.tgl1,r.tgl2].filter(Boolean).join(' & ');
+    return '<div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--surface2)">'+
+      '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px">'+
+        flag+
+        '<span style="font-weight:700;color:var(--text);font-size:13px">'+esc(r.kader)+'</span>'+
+        '<span style="font-size:11px;color:var(--text3)">mengunjungi</span>'+
+        '<span style="font-weight:600;color:var(--text);font-size:12px">'+esc(r.oddp||'-')+'</span>'+
+        '<span style="margin-left:auto;font-size:10px;color:var(--text3)">'+esc(r.kec)+(r.desa?' · '+esc(r.desa):'')+' · '+esc(bulanLabel(r.bulan))+(tgl?' · '+esc(tgl):'')+'</span>'+
+      '</div>'+ blocks +
+    '</div>';
+  }).join('');
+}
+function miniStat(lbl,val,total,color){
+  var pct=total?Math.round(val/total*100):0;
+  return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">'+
+    '<div style="font-size:20px;font-weight:800;color:'+color+';line-height:1">'+val+'</div>'+
+    '<div style="font-size:10px;color:var(--text2);margin-top:3px">'+lbl+'</div>'+
+    '<div style="height:4px;background:var(--border);border-radius:2px;margin-top:6px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+color+'"></div></div>'+
+  '</div>';
+}
+function narBlock(label,color,text){
+  return '<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:'+color+';text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;display:flex;align-items:center;gap:5px"><span style="width:6px;height:6px;border-radius:50%;background:'+color+';display:inline-block"></span>'+label+'</div>'+
+    '<div style="font-size:12px;color:var(--text2);line-height:1.6;padding-left:11px">'+esc(text)+'</div></div>';
 }
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
