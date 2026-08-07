@@ -87,6 +87,13 @@
       <div class="fb-list" id="desaList"></div>
     </div>
   </div>
+  <div class="sb-sec">
+    <div class="sb-head" onclick="toggleSB('sbNakes')"><span class="sb-lbl">Nama Nakes</span><span class="sb-chv open" id="chv-sbNakes">▼</span></div>
+    <div class="sb-body" id="sbNakes">
+      <div class="ctrl-row"><button class="ctrl-btn ca" onclick="slAll('nakes')">✓ Semua</button><button class="ctrl-btn cd" onclick="slClear('nakes')">✕ Hapus</button></div>
+      <div class="fb-list" id="nakesList"></div>
+    </div>
+  </div>
 </div>
 
 <div class="main">
@@ -99,16 +106,9 @@
     <div class="card"><div class="c-ttl">Kunjungan per Asal Puskesmas</div><div class="chart-box" style="height:320px"><canvas id="chartPK"></canvas></div></div>
   </div>
   <div class="card">
-    <div class="c-ttl">📋 Detail Kunjungan Nakes <span class="kbadge" id="rowCount"></span></div>
-    <div class="tbl-wrap" style="margin-top:10px">
-      <table class="dtbl">
-        <thead><tr>
-          <th>Nakes</th><th>Jabatan</th><th>Asal PKM</th><th>Wilayah</th><th>Bulan</th><th>ODDP Dikunjungi</th>
-          <th>Tgl Kunj</th><th>Hasil Observasi</th><th>Tantangan</th><th>RTL</th><th>CO</th>
-        </tr></thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
+    <div class="c-ttl" style="display:flex;align-items:center;gap:8px">📋 Laporan Naratif Kunjungan Nakes <span class="kbadge" id="rowCount"></span></div>
+    <div id="narasiSummary" style="margin-top:12px"></div>
+    <div id="narasiList" style="margin-top:14px;display:flex;flex-direction:column;gap:12px"></div>
   </div>
 </div>
 </div>
@@ -121,7 +121,7 @@ var TOKEN = localStorage.getItem('bersahaja_token');
 if(!TOKEN){ window.location.href='index.html'; }
 
 var RAW=[], CH={};
-var SEL={bulan:new Set(),kab:new Set(),kec:new Set(),pk:new Set(),desa:new Set()};
+var SEL={bulan:new Set(),kab:new Set(),kec:new Set(),pk:new Set(),desa:new Set(),nakes:new Set()};
 Chart.defaults.color='#3a5575';Chart.defaults.borderColor='#1b2e4a';Chart.defaults.font.family="'Inter',system-ui,sans-serif";Chart.defaults.font.size=10;
 function svg(p,c){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="'+(c||'currentColor')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
 var SVG={
@@ -168,11 +168,11 @@ function fetchData(msg){
 
 function uniq(a){return [...new Set(a)].filter(Boolean).sort();}
 function initFilters(){
-  ['bulan','kab','kec','pk','desa'].forEach(k=>{ SEL[k]=new Set(uniq(RAW.map(r=>r[k]))); });
+  ['bulan','kab','kec','pk','desa','nakes'].forEach(k=>{ SEL[k]=new Set(uniq(RAW.map(r=>r[k]))); });
   buildAllLists();
 }
 function buildAllLists(){
-  buildBulan(); buildFB('kab','kabList'); buildFB('kec','kecList'); buildFB('pk','pkList'); buildFB('desa','desaList');
+  buildBulan(); buildFB('kab','kabList'); buildFB('kec','kecList'); buildFB('pk','pkList'); buildFB('desa','desaList'); buildFB('nakes','nakesList');
 }
 function buildBulan(){
   var items=uniq(RAW.map(r=>r.bulan));
@@ -180,7 +180,7 @@ function buildBulan(){
 }
 function buildFB(key,elId){
   var items=uniq(RAW.map(r=>r[key]));
-  var colors={kab:'#3b82f6',kec:'#10b981',pk:'#f59e0b',desa:'#8b5cf6'};
+  var colors={kab:'#3b82f6',kec:'#10b981',pk:'#f59e0b',desa:'#8b5cf6',nakes:'#c084fc'};
   document.getElementById(elId).innerHTML=items.map(it=>'<button class="fb '+(SEL[key].has(it)?'on':'')+'" onclick="toggleF(\''+key+'\',\''+encodeURIComponent(it)+'\',this,1)"><span class="fb-dot" style="background:'+(colors[key]||'#3b82f6')+'"></span>'+esc(it)+'</button>').join('');
 }
 function toggleF(key,val,btn,enc){var v=enc?decodeURIComponent(val):val;if(SEL[key].has(v))SEL[key].delete(v);else SEL[key].add(v);btn.classList.toggle('on');render();}
@@ -188,7 +188,8 @@ function slAll(key){SEL[key]=new Set(uniq(RAW.map(r=>r[key])));if(key==='bulan')
 function slClear(key){SEL[key]=new Set();if(key==='bulan')buildBulan();else buildFB(key,key+'List');render();}
 
 function getFiltered(){
-  return RAW.filter(r=>SEL.bulan.has(r.bulan)&&SEL.kab.has(r.kab)&&SEL.kec.has(r.kec)&&SEL.pk.has(r.pk)&&SEL.desa.has(r.desa));
+  function ok(set,v){return v===''||v===null||v===undefined||set.has(v);}
+  return RAW.filter(r=>ok(SEL.bulan,r.bulan)&&ok(SEL.kab,r.kab)&&ok(SEL.kec,r.kec)&&ok(SEL.pk,r.pk)&&ok(SEL.desa,r.desa)&&ok(SEL.nakes,r.nakes));
 }
 
 function render(){
@@ -223,15 +224,42 @@ function drawBarH(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document
 function drawLine(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'line',data:{labels:l,datasets:[{data:v,borderColor:c,backgroundColor:c+'22',fill:true,tension:.3,pointRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
 
 function renderTable(data){
-  document.getElementById('rowCount').textContent=data.length+' baris';
-  if(!data.length){document.getElementById('tbody').innerHTML='<tr><td colspan="11" style="padding:30px;text-align:center;color:var(--text3)">Tidak ada data untuk filter ini.</td></tr>';return;}
-  document.getElementById('tbody').innerHTML=data.map(r=>
-    '<tr><td><strong>'+esc(r.nakes)+'</strong>'+(r.kontak?'<br><span style="color:var(--text3);font-size:9px">'+esc(r.kontak)+'</span>':'')+'</td>'+
-    '<td>'+esc(r.jabatan)+'</td><td>'+esc(r.asal_pk)+'</td>'+
-    '<td>'+esc(r.kec)+'<br><span style="color:var(--text3);font-size:9px">'+esc(r.desa)+'</span></td>'+
-    '<td>'+esc(bulanLabel(r.bulan))+'</td><td>'+esc(r.oddp)+'</td><td>'+esc(r.tgl)+'</td>'+
-    '<td class="cell-long">'+esc(r.observasi)+'</td><td class="cell-long">'+esc(r.tantangan)+'</td><td class="cell-long">'+esc(r.rtl)+'</td><td>'+esc(r.co)+'</td></tr>'
-  ).join('');
+  document.getElementById('rowCount').textContent=data.length+' kunjungan';
+  var sEl=document.getElementById('narasiSummary'), lEl=document.getElementById('narasiList');
+  if(!data.length){ sEl.innerHTML=''; lEl.innerHTML='<div style="padding:30px;text-align:center;color:var(--text3);font-size:13px">Tidak ada data untuk filter ini.</div>'; return; }
+
+  // Ringkasan
+  var nNakes=new Set(data.map(r=>r.nakes).filter(Boolean)).size;
+  var nOddp=new Set(data.map(r=>r.oddp).filter(Boolean)).size;
+  var nDesa=new Set(data.map(r=>r.desa).filter(Boolean)).size;
+  var adaTantangan=data.filter(r=>r.tantangan).length;
+  var periode=[...new Set(data.map(r=>r.bulan).filter(Boolean))].sort().map(bulanLabel).join(', ');
+  sEl.innerHTML='<div style="background:linear-gradient(135deg,rgba(192,132,252,.08),rgba(139,92,246,.04));border:1px solid rgba(192,132,252,.2);border-radius:12px;padding:16px 18px;font-size:13px;line-height:1.9;color:var(--text2)">'+
+    'Selama periode <strong style="color:var(--text)">'+esc(periode||'-')+'</strong>, sebanyak <strong style="color:#c084fc">'+nNakes+' tenaga kesehatan</strong> melakukan <strong style="color:#c084fc">'+data.length+' kunjungan</strong> kepada <strong style="color:#c084fc">'+nOddp+' ODDP</strong> yang tersebar di <strong style="color:#c084fc">'+nDesa+' desa</strong>. '+
+    'Dari seluruh kunjungan, <strong style="color:'+(adaTantangan?'#f59e0b':'#34d399')+'">'+adaTantangan+' kunjungan</strong> mencatat adanya tantangan di lapangan yang memerlukan tindak lanjut.'+
+    '</div>';
+
+  // Kartu naratif per kunjungan
+  lEl.innerHTML=data.map(function(r){
+    var blocks='';
+    if(r.observasi) blocks+=narBlock('🔍','Hasil Observasi','#3b82f6',r.observasi);
+    if(r.tantangan) blocks+=narBlock('⚠️','Tantangan','#f59e0b',r.tantangan);
+    if(r.rtl)       blocks+=narBlock('🎯','Rencana Tindak Lanjut','#10b981',r.rtl);
+    if(!blocks) blocks='<div style="font-size:11px;color:var(--text3);font-style:italic">Tidak ada catatan observasi/tantangan/RTL.</div>';
+    return '<div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--surface2)">'+
+      '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px">'+
+        '<span style="font-weight:700;color:var(--text);font-size:13px">'+esc(r.nakes)+'</span>'+
+        (r.jabatan?'<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(192,132,252,.15);color:#c084fc">'+esc(r.jabatan)+'</span>':'')+
+        '<span style="font-size:11px;color:var(--text3)">→ mengunjungi</span>'+
+        '<span style="font-weight:600;color:var(--text);font-size:12px">'+esc(r.oddp||'-')+'</span>'+
+        '<span style="margin-left:auto;font-size:10px;color:var(--text3)">'+esc(r.kec)+(r.desa?' · '+esc(r.desa):'')+' · '+esc(bulanLabel(r.bulan))+(r.tgl?' · '+esc(r.tgl):'')+'</span>'+
+      '</div>'+ blocks +
+    '</div>';
+  }).join('');
+}
+function narBlock(ic,label,color,text){
+  return '<div style="margin-bottom:8px"><div style="font-size:10px;font-weight:700;color:'+color+';text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">'+ic+' '+label+'</div>'+
+    '<div style="font-size:12px;color:var(--text2);line-height:1.6;padding-left:2px">'+esc(text)+'</div></div>';
 }
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}

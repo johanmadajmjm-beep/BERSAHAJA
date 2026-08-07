@@ -87,6 +87,13 @@
       <div class="fb-list" id="desaList"></div>
     </div>
   </div>
+  <div class="sb-sec">
+    <div class="sb-head" onclick="toggleSB('sbKader')"><span class="sb-lbl">Nama Kader</span><span class="sb-chv open" id="chv-sbKader">▼</span></div>
+    <div class="sb-body" id="sbKader">
+      <div class="ctrl-row"><button class="ctrl-btn ca" onclick="slAll('kader')">✓ Semua</button><button class="ctrl-btn cd" onclick="slClear('kader')">✕ Hapus</button></div>
+      <div class="fb-list" id="kaderList"></div>
+    </div>
+  </div>
 </div>
 
 <div class="main">
@@ -121,7 +128,7 @@ var TOKEN = localStorage.getItem('bersahaja_token');
 if(!TOKEN){ window.location.href='index.html'; }
 
 var RAW=[], CH={};
-var SEL={bulan:new Set(),kab:new Set(),kec:new Set(),pk:new Set(),desa:new Set()};
+var SEL={bulan:new Set(),kab:new Set(),kec:new Set(),pk:new Set(),desa:new Set(),kader:new Set()};
 Chart.defaults.color='#3a5575';Chart.defaults.borderColor='#1b2e4a';Chart.defaults.font.family="'Inter',system-ui,sans-serif";Chart.defaults.font.size=10;
 function svg(p,c){return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="'+(c||'currentColor')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
 var SVG={
@@ -167,11 +174,11 @@ function fetchData(msg){
 
 function uniq(a){return [...new Set(a)].filter(Boolean).sort();}
 function initFilters(){
-  ['bulan','kab','kec','pk','desa'].forEach(k=>{ SEL[k]=new Set(uniq(RAW.map(r=>r[k]))); });
+  ['bulan','kab','kec','pk','desa','kader'].forEach(k=>{ SEL[k]=new Set(uniq(RAW.map(r=>r[k]))); });
   buildAllLists();
 }
 function buildAllLists(){
-  buildBulan(); buildFB('kab','kabList'); buildFB('kec','kecList'); buildFB('pk','pkList'); buildFB('desa','desaList');
+  buildBulan(); buildFB('kab','kabList'); buildFB('kec','kecList'); buildFB('pk','pkList'); buildFB('desa','desaList'); buildFB('kader','kaderList');
 }
 function buildBulan(){
   var items=uniq(RAW.map(r=>r.bulan));
@@ -179,7 +186,7 @@ function buildBulan(){
 }
 function buildFB(key,elId){
   var items=uniq(RAW.map(r=>r[key]));
-  var colors={kab:'#3b82f6',kec:'#10b981',pk:'#f59e0b',desa:'#8b5cf6'};
+  var colors={kab:'#3b82f6',kec:'#10b981',pk:'#f59e0b',desa:'#8b5cf6',kader:'#fbbf24'};
   document.getElementById(elId).innerHTML=items.map(it=>'<button class="fb '+(SEL[key].has(it)?'on':'')+'" onclick="toggleF(\''+key+'\',\''+encodeURIComponent(it)+'\',this,1)"><span class="fb-dot" style="background:'+(colors[key]||'#3b82f6')+'"></span>'+esc(it)+'</button>').join('');
 }
 function toggleF(key,val,btn,enc){var v=enc?decodeURIComponent(val):val;if(SEL[key].has(v))SEL[key].delete(v);else SEL[key].add(v);btn.classList.toggle('on');render();}
@@ -187,7 +194,9 @@ function slAll(key){SEL[key]=new Set(uniq(RAW.map(r=>r[key])));if(key==='bulan')
 function slClear(key){SEL[key]=new Set();if(key==='bulan')buildBulan();else buildFB(key,key+'List');render();}
 
 function getFiltered(){
-  return RAW.filter(r=>SEL.bulan.has(r.bulan)&&SEL.kab.has(r.kab)&&SEL.kec.has(r.kec)&&SEL.pk.has(r.pk)&&SEL.desa.has(r.desa));
+  // Baris lolos jika nilainya terpilih ATAU nilainya kosong (jangan sembunyikan data karena field kosong)
+  function ok(set,v){return v===''||v===null||v===undefined||set.has(v);}
+  return RAW.filter(r=>ok(SEL.bulan,r.bulan)&&ok(SEL.kab,r.kab)&&ok(SEL.kec,r.kec)&&ok(SEL.pk,r.pk)&&ok(SEL.desa,r.desa)&&ok(SEL.kader,r.kader));
 }
 
 function render(){
