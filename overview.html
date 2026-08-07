@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-.ov-wrap{max-width:1320px;margin:0 auto;padding:20px}
+.ov-wrap{max-width:1320px;margin:0 auto;padding:20px;padding-top:calc(var(--nav-h,64px) + 20px)}
 .filterbar{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:18px;display:flex;gap:16px;flex-wrap:wrap;align-items:end}
 .fg{display:flex;flex-direction:column;gap:5px}
 .fg label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
@@ -72,6 +72,12 @@
       <div class="cc"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><circle cx="12" cy="10" r="5"/><path d="M12 15v7"/><path d="M9 19h6"/></svg>Jenis Kelamin per Program</h3><div class="cbox"><canvas id="cJK"></canvas></div></div>
     </div>
     <div class="cc" style="margin-bottom:14px"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Sebaran ODDP per Kecamatan</h3><div class="cbox tall"><canvas id="cKec"></canvas></div></div>
+
+    <div class="grid2">
+      <div class="cc"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Sebaran ODDP per Kabupaten</h3><div class="cbox"><canvas id="cKab"></canvas></div></div>
+      <div class="cc"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="M12 6v4"/><path d="M14 8h-4"/><path d="M4 22V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v18Z"/><path d="M10 22v-3a2 2 0 1 1 4 0v3"/></svg>Sebaran ODDP per Puskesmas</h3><div class="cbox"><canvas id="cPK"></canvas></div></div>
+    </div>
+    <div class="cc" style="margin-bottom:14px"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Sebaran ODDP per Desa (Top 15)</h3><div class="cbox tall"><canvas id="cDesa"></canvas></div></div>
   </div>
 </div>
 
@@ -178,18 +184,11 @@ function render(){
 
   document.getElementById('statusLine').textContent='Basis: '+oU.length+' ODDP unik';
 
-  // Baris KPI cakupan wilayah
-  var kab=new Set(),kec=new Set(),desa=new Set(),pk=new Set();
-  [].concat(o,cg,kd,nk).forEach(r=>{if(r.kab)kab.add(r.kab);if(r.kec)kec.add(r.kec);});
-  oU.forEach(r=>{if(r.desa)desa.add(r.desa);if(r.pk)pk.add(r.pk);});
-  var kb=document.getElementById('kpi5b');
-  kb.style.display='grid';
-  kb.innerHTML=
-    kc(SVG.pin,kab.size,'Kabupaten','#3b82f6')+
-    kc(SVG.map,kec.size,'Kecamatan','#10b981')+
-    kc(SVG.home,desa.size,'Desa','#8b5cf6')+
-    kc(SVG.hosp,pk.size,'Puskesmas','#f59e0b')+
-    kc(SVG.chart,DATA.oddp.length+DATA.cg.length,'Total Baris Data','#f43f5e');
+  // Grafik sebaran wilayah (berbasis ODDP unik)
+  function grp(f){var m={};oU.forEach(r=>{if(r[f])m[r[f]]=(m[r[f]]||0)+1;});var k=Object.keys(m).sort((a,b)=>m[b]-m[a]);return{k:k,v:k.map(x=>m[x])};}
+  var gKab=grp('kab'); barH('cKab',gKab.k,gKab.v,'#3b82f6');
+  var gPK=grp('pk');   barH('cPK',gPK.k.slice(0,15),gPK.v.slice(0,15),'#f59e0b');
+  var gDesa=grp('desa');barH('cDesa',gDesa.k.slice(0,15),gDesa.v.slice(0,15),'#8b5cf6');
 
   donut('cBpjs', countBy(oU,'bpjs',['Ya','Tidak']), ['#10b981','#f43f5e']);
   donut('cStatus', countBy(oU,'status',['Stabil','Belum Stabil','Amuk']), ['#10b981','#f59e0b','#f43f5e']);

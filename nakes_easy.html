@@ -91,8 +91,12 @@
 
 <div class="main">
   <div class="chart-grid">
-    <div class="card"><div class="c-ttl">📊 Kunjungan per Kecamatan</div><div class="chart-box"><canvas id="chartKec"></canvas></div></div>
-    <div class="card"><div class="c-ttl">📈 Kunjungan per Bulan</div><div class="chart-box"><canvas id="chartBulan"></canvas></div></div>
+    <div class="card"><div class="c-ttl">Kunjungan per Kecamatan</div><div class="chart-box"><canvas id="chartKec"></canvas></div></div>
+    <div class="card"><div class="c-ttl">Kunjungan per Bulan</div><div class="chart-box"><canvas id="chartBulan"></canvas></div></div>
+  </div>
+  <div class="chart-grid">
+    <div class="card"><div class="c-ttl">Kunjungan per Desa (Top 15)</div><div class="chart-box" style="height:320px"><canvas id="chartDesa"></canvas></div></div>
+    <div class="card"><div class="c-ttl">Kunjungan per Asal Puskesmas</div><div class="chart-box" style="height:320px"><canvas id="chartPK"></canvas></div></div>
   </div>
   <div class="card">
     <div class="c-ttl">📋 Detail Kunjungan Nakes <span class="kbadge" id="rowCount"></span></div>
@@ -207,8 +211,15 @@ function renderCharts(data){
   var byB={};data.forEach(r=>{if(r.bulan)byB[r.bulan]=(byB[r.bulan]||0)+1;});
   var bk=Object.keys(byB).sort();
   drawLine('chartBulan',bk.map(bulanLabel),bk.map(k=>byB[k]),'#f59e0b');
+  var byD={};data.forEach(r=>{if(r.desa)byD[r.desa]=(byD[r.desa]||0)+1;});
+  var dk=Object.keys(byD).sort((a,b)=>byD[b]-byD[a]).slice(0,15);
+  drawBarH('chartDesa',dk,dk.map(k=>byD[k]),'#8b5cf6');
+  var byP={};data.forEach(r=>{if(r.pk)byP[r.pk]=(byP[r.pk]||0)+1;});
+  var pk=Object.keys(byP).sort((a,b)=>byP[b]-byP[a]).slice(0,15);
+  drawBarH('chartPK',pk,pk.map(k=>byP[k]),'#f43f5e');
 }
 function drawBar(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:c+'cc',borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
+function drawBarH(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:c+'cc',borderRadius:5}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,resizeDelay:100,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}}}}});}
 function drawLine(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'line',data:{labels:l,datasets:[{data:v,borderColor:c,backgroundColor:c+'22',fill:true,tension:.3,pointRadius:4}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100}});}
 
 function renderTable(data){
