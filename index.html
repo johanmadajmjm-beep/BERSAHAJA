@@ -88,11 +88,9 @@ function doLogin() {
   btn.textContent = 'Memeriksa...';
   document.getElementById('msg').className = 'msg'; // sembunyikan msg
 
-  fetch(GAS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: 'login', username: username, password: password })
-  })
+  var loginBody = new URLSearchParams();
+  loginBody.append('payload', JSON.stringify({ action: 'login', username: username, password: password }));
+  fetch(GAS_URL, { method: 'POST', body: loginBody })
   .then(function(r) { return r.json(); })
   .then(function(data) {
     btn.disabled = false;
