@@ -156,6 +156,7 @@ function normBulan(v){
   var s=String(v).trim();
   var m=s.match(/^(\d{4})-(\d{2})$/);
   if(m)return m[1]+'-'+m[2];
+  if(/^\d+(\.\d+)?$/.test(s)){var sn=parseFloat(s);if(sn>20000&&sn<80000){var ds=new Date(Date.UTC(1899,11,30)+Math.round(sn)*86400000);return ds.getUTCFullYear()+'-'+String(ds.getUTCMonth()+1).padStart(2,'0');}}
   if(/\d{4}-\d{2}-\d{2}/.test(s)){
     var d=new Date(s);
     if(!isNaN(d)){var local=new Date(d.getTime()+8*3600*1000);return local.getUTCFullYear()+'-'+String(local.getUTCMonth()+1).padStart(2,'0');}
