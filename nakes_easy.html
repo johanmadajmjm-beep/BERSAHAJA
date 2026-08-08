@@ -14,7 +14,11 @@
 .kpi-card .kl{font-size:10px;color:var(--text2);margin-top:4px}
 .kpi-card .ki{font-size:16px;margin-bottom:6px}
 .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
+.dist-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.dist-col{min-width:0}
+.dist-col .chart-box{height:380px}
+.dist-sub{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px}
+@media(max-width:900px){.chart-grid{grid-template-columns:1fr}.dist-grid{grid-template-columns:1fr}}
 .tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
 .dtbl{width:100%;border-collapse:collapse;font-size:11.5px}
 .dtbl th{background:var(--surface2);color:var(--text2);font-weight:600;padding:9px 11px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0}
@@ -98,13 +102,16 @@
 </div>
 
 <div class="main">
-  <div class="chart-grid">
-    <div class="card"><div class="c-ttl">Kunjungan per Kecamatan</div><div class="chart-box"><canvas id="chartKec"></canvas></div></div>
-    <div class="card"><div class="c-ttl">Kunjungan per Bulan</div><div class="chart-box"><canvas id="chartBulan"></canvas></div></div>
+  <div class="card">
+    <div class="c-ttl" style="margin-bottom:14px">Distribusi Kunjungan Nakes per Wilayah</div>
+    <div class="dist-grid">
+      <div class="dist-col"><div class="dist-sub">Per Kecamatan</div><div class="chart-box"><canvas id="chartKec"></canvas></div></div>
+      <div class="dist-col"><div class="dist-sub">Per Desa (Top 15)</div><div class="chart-box"><canvas id="chartDesa"></canvas></div></div>
+      <div class="dist-col"><div class="dist-sub">Per Asal Puskesmas</div><div class="chart-box"><canvas id="chartPK"></canvas></div></div>
+    </div>
   </div>
-  <div class="chart-grid">
-    <div class="card"><div class="c-ttl">Kunjungan per Desa (Top 15)</div><div class="chart-box"><canvas id="chartDesa"></canvas></div></div>
-    <div class="card"><div class="c-ttl">Kunjungan per Asal Puskesmas</div><div class="chart-box"><canvas id="chartPK"></canvas></div></div>
+  <div class="card">
+    <div class="c-ttl">Kunjungan per Bulan</div><div class="chart-box" style="height:280px"><canvas id="chartBulan"></canvas></div>
   </div>
   <div class="card">
     <div class="c-ttl" style="display:flex;align-items:center;gap:8px">📋 Laporan Naratif Kunjungan Nakes <span class="kbadge" id="rowCount"></span></div>
@@ -222,10 +229,10 @@ function renderCharts(data){
   drawLine('chartBulan',bk.map(bulanLabel),bk.map(k=>byB[k]),'#f59e0b');
   var byD={};data.forEach(r=>{if(r.desa)byD[r.desa]=(byD[r.desa]||0)+1;});
   var dk=Object.keys(byD).sort((a,b)=>byD[b]-byD[a]).slice(0,15);
-  drawBarH('chartDesa',dk,dk.map(k=>byD[k]),'#8b5cf6');
+  drawBar('chartDesa',dk,dk.map(k=>byD[k]),'#8b5cf6');
   var byP={};data.forEach(r=>{if(r.pk)byP[r.pk]=(byP[r.pk]||0)+1;});
   var pk=Object.keys(byP).sort((a,b)=>byP[b]-byP[a]).slice(0,15);
-  drawBarH('chartPK',pk,pk.map(k=>byP[k]),'#f43f5e');
+  drawBar('chartPK',pk,pk.map(k=>byP[k]),'#f43f5e');
 }
 function drawBar(id,l,v,c){if(CH[id])CH[id].destroy();CH[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:colorsFor(v.length),borderRadius:6,maxBarThickness:48}]},options:{layout:{padding:{top:20}},plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},responsive:true,maintainAspectRatio:false,resizeDelay:100},plugins:[barLabelPlugin(false)]});}
 function drawBarH(id,l,v,c){if(CH[id])CH[id].destroy();var el=document.getElementById(id);el.parentElement.style.height=Math.max(200,l.length*30+50)+'px';CH[id]=new Chart(el,{type:'bar',data:{labels:l,datasets:[{data:v,backgroundColor:colorsFor(v.length),borderRadius:5,maxBarThickness:24}]},options:{indexAxis:'y',layout:{padding:{right:28}},responsive:true,maintainAspectRatio:false,resizeDelay:100,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}},y:{ticks:{font:{size:10}}}}},plugins:[barLabelPlugin(true)]});}
